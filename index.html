@@ -1,0 +1,1586 @@
+<title>Consumidor Inteligente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* ============================================================
+   CONSUMIDOR INTELIGENTE — sistema de diseño "papel de recibo"
+   Arena cálida + tinta café + sello dorado.
+   ============================================================ */
+:root{
+  --arena:        #EBE0CE;
+  --arena-hondo:  #DCCFB8;
+  --papel:        #FBF6EC;
+  --papel-alto:   #FFFDF8;
+  --tinta:        #26201A;
+  --tinta-suave:  #6D5F4E;
+  --tinta-tenue:  #A2917A;
+  --oro:          #A9772B;
+  --oro-vivo:     #C9973F;
+  --sello:        #8A6023;
+  --bien:         #4E6B45;
+  --bien-fondo:   #E2E8DA;
+  --mal:          #A6483A;
+  --mal-fondo:    #F1DCD6;
+  --linea:        rgba(38,32,26,.16);
+  --linea-fuerte: rgba(38,32,26,.30);
+  --sombra:       0 1px 0 rgba(38,32,26,.10), 0 14px 34px -18px rgba(38,32,26,.45);
+  --sombra-alta:  0 2px 0 rgba(38,32,26,.12), 0 26px 50px -20px rgba(38,32,26,.5);
+
+  --display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --texto:   "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --tique:   "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --arena:        #1B1712;
+    --arena-hondo:  #12100C;
+    --papel:        #262019;
+    --papel-alto:   #2F2820;
+    --tinta:        #F2E8D8;
+    --tinta-suave:  #B4A48C;
+    --tinta-tenue:  #7E7160;
+    --oro:          #DCAE5E;
+    --oro-vivo:     #EFC77E;
+    --sello:        #E4BC72;
+    --bien:         #93B481;
+    --bien-fondo:   #2B342A;
+    --mal:          #D5836E;
+    --mal-fondo:    #3A2723;
+    --linea:        rgba(242,232,216,.16);
+    --linea-fuerte: rgba(242,232,216,.30);
+    --sombra:       0 1px 0 rgba(0,0,0,.4), 0 14px 34px -18px rgba(0,0,0,.9);
+    --sombra-alta:  0 2px 0 rgba(0,0,0,.5), 0 26px 50px -20px rgba(0,0,0,.95);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --arena:        #1B1712;
+  --arena-hondo:  #12100C;
+  --papel:        #262019;
+  --papel-alto:   #2F2820;
+  --tinta:        #F2E8D8;
+  --tinta-suave:  #B4A48C;
+  --tinta-tenue:  #7E7160;
+  --oro:          #DCAE5E;
+  --oro-vivo:     #EFC77E;
+  --sello:        #E4BC72;
+  --bien:         #93B481;
+  --bien-fondo:   #2B342A;
+  --mal:          #D5836E;
+  --mal-fondo:    #3A2723;
+  --linea:        rgba(242,232,216,.16);
+  --linea-fuerte: rgba(242,232,216,.30);
+  --sombra:       0 1px 0 rgba(0,0,0,.4), 0 14px 34px -18px rgba(0,0,0,.9);
+  --sombra-alta:  0 2px 0 rgba(0,0,0,.5), 0 26px 50px -20px rgba(0,0,0,.95);
+  color-scheme: dark;
+}
+
+*{ box-sizing: border-box; }
+
+body{
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--arena);
+  color: var(--tinta);
+  font-family: var(--texto);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ---------- lienzos de fondo y efectos ---------- */
+#lienzoFondo, #lienzoFx{
+  position: fixed; inset: 0; width: 100%; height: 100%;
+  pointer-events: none;
+}
+#lienzoFondo{ z-index: 0; }
+#lienzoFx{ z-index: 60; }
+
+.vineta{
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    radial-gradient(120% 85% at 50% 0%, transparent 40%, color-mix(in srgb, var(--arena-hondo) 70%, transparent) 100%);
+}
+
+/* ---------- escenario ---------- */
+.escenario{
+  position: relative; z-index: 2;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 58px 16px 28px;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.pantalla{ display: none; flex: 1; flex-direction: column; gap: 18px; }
+.pantalla.activa{ display: flex; animation: entrarPantalla .5s cubic-bezier(.2,.9,.25,1) both; }
+@keyframes entrarPantalla{
+  from{ opacity: 0; transform: translateY(14px) scale(.985); }
+  to{ opacity: 1; transform: none; }
+}
+
+/* ---------- material papel ---------- */
+.papel{
+  position: relative;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 26px, color-mix(in srgb, var(--tinta) 4%, transparent) 26px 27px),
+    var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: 4px;
+  box-shadow: var(--sombra);
+}
+.papel::after{
+  content: ""; position: absolute; inset: 3px; border-radius: 2px;
+  border: 1px dashed color-mix(in srgb, var(--tinta) 12%, transparent);
+  pointer-events: none;
+}
+
+/* ---------- tipografía compartida ---------- */
+.etiqueta{
+  font-family: var(--tique);
+  font-size: 10px; font-weight: 500;
+  letter-spacing: .22em; text-transform: uppercase;
+  color: var(--tinta-tenue);
+}
+.titulo{
+  font-family: var(--display);
+  font-weight: 700;
+  font-variation-settings: "SOFT" 20, "WONK" 1;
+  line-height: 1.02;
+  letter-spacing: -.015em;
+  text-wrap: balance;
+  margin: 0;
+}
+
+/* ============================================================
+   PORTADA
+   ============================================================ */
+.portada{ justify-content: center; gap: 22px; padding: 8px 0 0; }
+
+.cinta{
+  align-self: center;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 14px;
+  border: 1px solid var(--oro);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--oro) 12%, transparent);
+  color: var(--oro);
+  font-family: var(--tique); font-size: 10px; font-weight: 600;
+  letter-spacing: .24em; text-transform: uppercase;
+}
+.cinta .punto{
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--oro-vivo);
+  animation: latir 2.4s ease-in-out infinite;
+}
+@keyframes latir{ 0%,100%{ opacity:.35; transform: scale(.8);} 50%{ opacity:1; transform: scale(1.25);} }
+
+.portada h1{
+  font-size: clamp(46px, 15vw, 74px);
+  text-align: center;
+}
+.portada h1 .reng{ display: block; }
+.portada h1 .reng.dorado{
+  color: var(--oro);
+  font-style: italic;
+  font-variation-settings: "SOFT" 60, "WONK" 1;
+}
+.portada h1 .car{
+  display: inline-block;
+  animation: caerLetra .62s cubic-bezier(.2,.85,.3,1) both;
+  animation-delay: calc(var(--i) * 38ms + 120ms);
+}
+@keyframes caerLetra{
+  from{ opacity: 0; transform: translateY(-.42em) rotate(-8deg); filter: blur(4px); }
+  to{ opacity: 1; transform: none; filter: none; }
+}
+
+.bajada{
+  text-align: center;
+  color: var(--tinta-suave);
+  font-size: 15px;
+  max-width: 34ch;
+  margin: 0 auto;
+  animation: subir .7s ease both .9s;
+}
+@keyframes subir{ from{ opacity:0; transform: translateY(10px);} to{ opacity:1; transform:none;} }
+
+.moneda{
+  align-self: center;
+  width: 78px; height: 78px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background: radial-gradient(circle at 34% 30%, var(--oro-vivo), var(--sello) 74%);
+  color: var(--papel-alto);
+  font-family: var(--display); font-size: 34px; font-weight: 700;
+  box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--papel) 45%, transparent), 0 12px 26px -12px var(--sello);
+  animation: girarMoneda 6s cubic-bezier(.45,0,.55,1) infinite;
+}
+@keyframes girarMoneda{
+  0%,72%,100%{ transform: rotateY(0deg) translateY(0); }
+  78%{ transform: rotateY(180deg) translateY(-8px); }
+  84%{ transform: rotateY(360deg) translateY(0); }
+}
+
+.registro{
+  padding: 20px 18px;
+  display: flex; flex-direction: column; gap: 14px;
+  animation: subir .7s ease both 1.05s;
+}
+.campo{ display: flex; flex-direction: column; gap: 6px; }
+.campo label{ font-family: var(--tique); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--tinta-tenue); }
+.campo input{
+  width: 100%; min-width: 0;
+  font-family: var(--texto); font-size: 16px; font-weight: 600;
+  color: var(--tinta);
+  background: transparent;
+  border: 0; border-bottom: 1.5px dashed var(--linea-fuerte);
+  padding: 8px 2px;
+  transition: border-color .25s, transform .25s;
+}
+.campo input::placeholder{ color: var(--tinta-tenue); font-weight: 400; }
+.campo input:focus{ outline: none; border-bottom-color: var(--oro); border-bottom-style: solid; }
+.integrantes{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.integrantes input{ font-size: 14px; }
+
+.boton{
+  font-family: var(--texto); font-size: 15px; font-weight: 700;
+  letter-spacing: .02em;
+  color: var(--papel-alto);
+  background: var(--tinta);
+  border: 0; border-radius: 3px;
+  padding: 16px 20px;
+  cursor: pointer;
+  position: relative; overflow: hidden;
+  transition: transform .18s cubic-bezier(.2,.9,.3,1.4), box-shadow .25s, background .25s;
+  box-shadow: 0 6px 0 -1px color-mix(in srgb, var(--tinta) 55%, var(--arena));
+}
+.boton:hover{ transform: translateY(-2px); box-shadow: 0 9px 0 -1px color-mix(in srgb, var(--tinta) 55%, var(--arena)); }
+.boton:active{ transform: translateY(3px); box-shadow: 0 2px 0 -1px color-mix(in srgb, var(--tinta) 55%, var(--arena)); }
+.boton::before{
+  content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 45%;
+  background: linear-gradient(100deg, transparent, color-mix(in srgb, var(--papel) 40%, transparent), transparent);
+  animation: brillo 3.4s ease-in-out infinite;
+}
+@keyframes brillo{ 0%,55%{ left:-60%; } 85%,100%{ left: 115%; } }
+.boton.oro{
+  background: linear-gradient(160deg, var(--oro-vivo), var(--sello));
+  box-shadow: 0 6px 0 -1px color-mix(in srgb, var(--sello) 70%, var(--arena));
+}
+.boton.oro:hover{ box-shadow: 0 9px 0 -1px color-mix(in srgb, var(--sello) 70%, var(--arena)); }
+.boton.fantasma{
+  background: transparent; color: var(--tinta);
+  border: 1px solid var(--linea-fuerte);
+  box-shadow: none;
+}
+.boton.fantasma::before{ display: none; }
+.boton.fantasma:hover{ background: color-mix(in srgb, var(--tinta) 6%, transparent); box-shadow: none; }
+
+.reglas{
+  display: grid; gap: 8px;
+  animation: subir .7s ease both 1.2s;
+}
+.regla{
+  display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start;
+  font-size: 13.5px; color: var(--tinta-suave);
+}
+.regla b{ color: var(--tinta); font-weight: 600; }
+.regla .num{
+  font-family: var(--tique); font-size: 11px; font-weight: 600;
+  color: var(--oro);
+  border: 1px solid var(--oro); border-radius: 3px;
+  text-align: center; line-height: 22px; height: 24px;
+}
+
+/* ============================================================
+   JUEGO
+   ============================================================ */
+.barraSuperior{ display: flex; flex-direction: column; gap: 10px; }
+.marcadorFila{ display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.equipoChip{
+  display: inline-flex; align-items: center; gap: 7px;
+  max-width: 52%;
+  font-family: var(--tique); font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--tinta-suave);
+}
+.equipoChip .bolita{ width: 7px; height: 7px; border-radius: 50%; background: var(--oro); flex: none; }
+.equipoChip span{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.puntajeCaja{ display: flex; align-items: baseline; gap: 8px; }
+.puntaje{
+  font-family: var(--tique); font-size: 22px; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--tinta);
+}
+.puntajeCaja .etiqueta{ font-size: 9px; }
+.puntaje.sube{ animation: puntajeSube .5s cubic-bezier(.2,.9,.3,1.6); }
+@keyframes puntajeSube{ 0%{ transform: scale(1);} 40%{ transform: scale(1.22); color: var(--oro);} 100%{ transform: scale(1);} }
+
+.racha{
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 9px; border-radius: 999px;
+  background: color-mix(in srgb, var(--oro) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--oro) 45%, transparent);
+  color: var(--oro);
+  font-family: var(--tique); font-size: 10px; font-weight: 600; letter-spacing: .12em;
+  opacity: 0; transform: scale(.7);
+  transition: opacity .3s, transform .35s cubic-bezier(.2,.9,.3,1.6);
+}
+.racha.viva{ opacity: 1; transform: scale(1); }
+
+.cintaProgreso{ display: flex; gap: 4px; }
+.cintaProgreso i{
+  flex: 1; height: 5px; border-radius: 2px;
+  background: var(--linea);
+  transition: background .4s, transform .4s;
+}
+.cintaProgreso i.ok{ background: var(--bien); }
+.cintaProgreso i.no{ background: var(--mal); }
+.cintaProgreso i.hoy{ background: var(--oro); transform: scaleY(2.2); }
+
+/* --- tarjeta de pregunta --- */
+.tarjeta{
+  flex: 1;
+  display: flex; flex-direction: column; gap: 16px;
+  padding: 22px 18px 18px;
+  perspective: 1200px;
+}
+.tarjeta.entra{ animation: tarjetaEntra .55s cubic-bezier(.2,.9,.25,1) both; }
+.tarjeta.sale{ animation: tarjetaSale .34s cubic-bezier(.5,0,.75,0) both; }
+@keyframes tarjetaEntra{
+  from{ opacity: 0; transform: translateY(26px) rotateX(14deg); transform-origin: top center; }
+  to{ opacity: 1; transform: none; }
+}
+@keyframes tarjetaSale{
+  to{ opacity: 0; transform: translateY(-22px) rotateX(-12deg); transform-origin: bottom center; }
+}
+
+.encabezado{ display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.numPregunta{
+  font-family: var(--tique); font-size: 10px; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--tinta-tenue);
+}
+.numPregunta b{ color: var(--oro); font-weight: 600; }
+.valorPregunta{
+  font-family: var(--tique); font-size: 10px; letter-spacing: .12em;
+  color: var(--tinta-tenue);
+  border: 1px dashed var(--linea-fuerte); border-radius: 3px;
+  padding: 3px 7px;
+}
+
+.emojiPregunta{
+  font-size: 34px; line-height: 1;
+  animation: flotar 3.6s ease-in-out infinite;
+}
+@keyframes flotar{ 0%,100%{ transform: translateY(0) rotate(-3deg);} 50%{ transform: translateY(-7px) rotate(4deg);} }
+
+.textoPregunta{
+  font-family: var(--display); font-weight: 600;
+  font-variation-settings: "SOFT" 30, "WONK" 1;
+  font-size: clamp(21px, 5.6vw, 27px);
+  line-height: 1.22; letter-spacing: -.01em;
+  text-wrap: balance;
+  margin: 0;
+}
+
+.opciones{ display: flex; flex-direction: column; gap: 9px; margin-top: 2px; }
+.opcion{
+  --tono: var(--linea);
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  align-items: center;
+  gap: 11px;
+  width: 100%; text-align: left;
+  padding: 13px 12px;
+  background: var(--papel-alto);
+  border: 1px solid var(--tono);
+  border-left: 3px solid var(--tono);
+  border-radius: 3px;
+  color: var(--tinta);
+  font-family: var(--texto); font-size: 15px; font-weight: 500; line-height: 1.35;
+  cursor: pointer;
+  animation: opcionEntra .45s cubic-bezier(.2,.9,.3,1.3) both;
+  animation-delay: calc(var(--i) * 70ms + 160ms);
+  transition: transform .16s cubic-bezier(.2,.9,.3,1.5), border-color .25s, background .25s, box-shadow .25s, opacity .3s;
+}
+@keyframes opcionEntra{
+  from{ opacity: 0; transform: translateX(-16px); }
+  to{ opacity: 1; transform: none; }
+}
+.opcion:hover:not(:disabled){ transform: translateX(4px); border-color: var(--oro); --tono: var(--oro); box-shadow: var(--sombra); }
+.opcion:active:not(:disabled){ transform: translateX(4px) scale(.985); }
+.opcion:focus-visible{ outline: 2px solid var(--oro); outline-offset: 3px; }
+.opcion .letra{
+  font-family: var(--tique); font-size: 13px; font-weight: 600;
+  width: 30px; height: 30px; line-height: 28px; text-align: center;
+  border: 1px solid var(--tono); border-radius: 3px;
+  color: var(--tinta-suave);
+  transition: background .25s, color .25s, border-color .25s;
+}
+.opcion:hover:not(:disabled) .letra{ background: var(--oro); color: var(--papel-alto); border-color: var(--oro); }
+.opcion .marca{
+  font-family: var(--tique); font-size: 9px; letter-spacing: .14em; text-transform: uppercase;
+  opacity: 0; transform: translateX(6px);
+  transition: opacity .3s .1s, transform .3s .1s;
+  white-space: nowrap;
+}
+.opcion.correcta{
+  --tono: var(--bien);
+  background: var(--bien-fondo);
+  animation: aciertoPulso .6s cubic-bezier(.2,.9,.3,1.5);
+}
+.opcion.correcta .letra{ background: var(--bien); color: var(--papel-alto); border-color: var(--bien); }
+.opcion.correcta .marca{ opacity: 1; transform: none; color: var(--bien); }
+@keyframes aciertoPulso{ 0%{ transform: scale(1);} 45%{ transform: scale(1.035);} 100%{ transform: scale(1);} }
+.opcion.errada{
+  --tono: var(--mal);
+  background: var(--mal-fondo);
+  animation: temblor .5s cubic-bezier(.36,.07,.19,.97);
+}
+.opcion.errada .letra{ background: var(--mal); color: var(--papel-alto); border-color: var(--mal); }
+.opcion.errada .marca{ opacity: 1; transform: none; color: var(--mal); }
+@keyframes temblor{ 10%,90%{ transform: translateX(-3px);} 20%,80%{ transform: translateX(5px);} 30%,50%,70%{ transform: translateX(-8px);} 40%,60%{ transform: translateX(8px);} }
+.opcion.apagada{ opacity: .3; }
+.opcion.descartada{ opacity: .22; text-decoration: line-through; animation: descartar .4s ease both; }
+@keyframes descartar{ from{ transform: none; } to{ transform: translateX(-8px) scale(.97); } }
+.opcion:disabled{ cursor: default; }
+
+/* --- comodines --- */
+.comodines{ display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.comodin{
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px 10px;
+  background: transparent;
+  border: 1px dashed var(--linea-fuerte);
+  border-radius: 3px;
+  color: var(--tinta-suave);
+  font-family: var(--texto); font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: border-color .25s, color .25s, background .25s, transform .18s;
+}
+.comodin:hover:not(:disabled){ border-color: var(--oro); border-style: solid; color: var(--oro); transform: translateY(-2px); }
+.comodin:focus-visible{ outline: 2px solid var(--oro); outline-offset: 3px; }
+.comodin:disabled{ opacity: .32; cursor: default; }
+.comodin .usos{
+  font-family: var(--tique); font-size: 10px; font-weight: 600;
+  padding: 1px 6px; border-radius: 999px;
+  background: color-mix(in srgb, var(--oro) 18%, transparent);
+  color: var(--oro);
+}
+.pista{
+  display: none;
+  gap: 9px; align-items: start;
+  padding: 11px 12px;
+  border-left: 3px solid var(--oro);
+  background: color-mix(in srgb, var(--oro) 9%, transparent);
+  font-size: 13.5px; color: var(--tinta-suave);
+  border-radius: 0 3px 3px 0;
+}
+.pista.visible{ display: flex; animation: subir .4s ease both; }
+.pista b{ color: var(--oro); font-family: var(--tique); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
+
+/* --- veredicto --- */
+.veredicto{
+  display: none;
+  flex-direction: column; gap: 12px;
+  padding: 16px 16px 14px;
+  border-top: 2px dashed var(--linea-fuerte);
+  margin-top: auto;
+}
+.veredicto.visible{ display: flex; animation: veredictoEntra .45s cubic-bezier(.2,.9,.25,1.1) both; }
+@keyframes veredictoEntra{ from{ opacity:0; transform: translateY(20px);} to{ opacity:1; transform:none;} }
+.veredictoTitulo{
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--display); font-weight: 700; font-size: 21px;
+  font-variation-settings: "SOFT" 40, "WONK" 1;
+}
+.veredictoTitulo.bien{ color: var(--bien); }
+.veredictoTitulo.mal{ color: var(--mal); }
+.ganancia{
+  margin-left: auto;
+  font-family: var(--tique); font-size: 15px; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.explicacion{ font-size: 14.5px; color: var(--tinta-suave); margin: 0; max-width: 46ch; }
+.explicacion b{ color: var(--tinta); font-weight: 600; }
+
+/* sello de goma */
+.sello{
+  position: absolute; top: 46%; left: 50%;
+  z-index: 5;
+  padding: 10px 22px;
+  border: 4px double currentColor;
+  border-radius: 5px;
+  font-family: var(--tique); font-size: 24px; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%,-50%) rotate(-14deg) scale(2.6);
+}
+.sello.bien{ color: var(--bien); }
+.sello.mal{ color: var(--mal); }
+.sello.golpe{ animation: sellar 1.15s cubic-bezier(.2,.9,.25,1) both; }
+@keyframes sellar{
+  0%{ opacity: 0; transform: translate(-50%,-50%) rotate(-24deg) scale(2.8); filter: blur(6px); }
+  22%{ opacity: .96; transform: translate(-50%,-50%) rotate(-13deg) scale(1); filter: blur(0); }
+  30%{ transform: translate(-50%,-50%) rotate(-13deg) scale(1.06); }
+  38%{ transform: translate(-50%,-50%) rotate(-13deg) scale(1); }
+  76%{ opacity: .96; }
+  100%{ opacity: 0; transform: translate(-50%,-50%) rotate(-13deg) scale(1.12); }
+}
+
+/* puntos flotantes */
+.flotante{
+  position: fixed; z-index: 70; pointer-events: none;
+  font-family: var(--tique); font-size: 20px; font-weight: 600;
+  color: var(--oro);
+  text-shadow: 0 2px 10px color-mix(in srgb, var(--arena) 80%, transparent);
+  animation: subirFlotante 1.15s cubic-bezier(.2,.8,.3,1) both;
+}
+@keyframes subirFlotante{
+  0%{ opacity: 0; transform: translate(-50%,0) scale(.6); }
+  25%{ opacity: 1; transform: translate(-50%,-26px) scale(1.15); }
+  100%{ opacity: 0; transform: translate(-50%,-90px) scale(1); }
+}
+
+/* ============================================================
+   RECIBO FINAL
+   ============================================================ */
+.cierre{ justify-content: flex-start; gap: 16px; padding-top: 6px; }
+.recibo{
+  padding: 26px 20px 22px;
+  display: flex; flex-direction: column; gap: 16px;
+  --dientes: 9px;
+  border-radius: 0;
+  -webkit-mask:
+    radial-gradient(var(--dientes) at 50% 0, transparent 98%, #000) 0 0/22px var(--dientes) repeat-x,
+    radial-gradient(var(--dientes) at 50% 100%, transparent 98%, #000) 0 100%/22px var(--dientes) repeat-x,
+    linear-gradient(#000,#000) 0 var(--dientes)/100% calc(100% - var(--dientes)*2) no-repeat;
+          mask:
+    radial-gradient(var(--dientes) at 50% 0, transparent 98%, #000) 0 0/22px var(--dientes) repeat-x,
+    radial-gradient(var(--dientes) at 50% 100%, transparent 98%, #000) 0 100%/22px var(--dientes) repeat-x,
+    linear-gradient(#000,#000) 0 var(--dientes)/100% calc(100% - var(--dientes)*2) no-repeat;
+  border: 0;
+}
+.recibo::after{ display: none; }
+.reciboCabeza{ text-align: center; display: flex; flex-direction: column; gap: 6px; }
+.reciboCabeza .marca{
+  font-family: var(--tique); font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+  color: var(--tinta-tenue);
+}
+.rango{
+  font-family: var(--display); font-weight: 700;
+  font-variation-settings: "SOFT" 50, "WONK" 1;
+  font-size: clamp(30px, 8.5vw, 42px);
+  line-height: 1.05;
+  color: var(--oro);
+  text-wrap: balance;
+}
+.reciboCabeza .equipo{ font-size: 14px; color: var(--tinta-suave); }
+
+.lineas{ display: flex; flex-direction: column; gap: 0; }
+.linea{
+  display: grid; grid-template-columns: auto 1fr auto;
+  align-items: baseline; gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px dotted var(--linea);
+  font-size: 13.5px;
+  animation: lineaEntra .4s ease both;
+  animation-delay: calc(var(--i) * 55ms + 300ms);
+}
+@keyframes lineaEntra{ from{ opacity:0; transform: translateX(-10px);} to{ opacity:1; transform:none;} }
+.linea .idx{ font-family: var(--tique); font-size: 11px; color: var(--tinta-tenue); }
+.linea .desc{ color: var(--tinta-suave); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.linea .val{ font-family: var(--tique); font-size: 12px; font-variant-numeric: tabular-nums; }
+.linea.ok .val{ color: var(--bien); }
+.linea.no .val{ color: var(--mal); }
+
+.total{
+  display: grid; grid-template-columns: 1fr auto;
+  align-items: baseline; gap: 10px;
+  border-top: 2px solid var(--tinta); padding-top: 12px;
+}
+.total .rotulo{ font-family: var(--tique); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--tinta-suave); }
+.total .cifra{
+  font-family: var(--tique); font-size: 40px; font-weight: 600; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.subtotales{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mini{
+  border: 1px dashed var(--linea-fuerte); border-radius: 3px;
+  padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.mini .k{ font-family: var(--tique); font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--tinta-tenue); }
+.mini .v{ font-family: var(--tique); font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.mensajeCierre{
+  font-size: 14.5px; color: var(--tinta-suave); text-align: center;
+  max-width: 42ch; margin: 0 auto;
+}
+.codigo{
+  text-align: center;
+  font-family: var(--tique); font-size: 10px; letter-spacing: .3em;
+  color: var(--tinta-tenue);
+}
+.barras{
+  height: 34px; width: 100%;
+  background-image: repeating-linear-gradient(90deg,
+    var(--tinta) 0 2px, transparent 2px 4px,
+    var(--tinta) 4px 7px, transparent 7px 9px,
+    var(--tinta) 9px 10px, transparent 10px 14px);
+  opacity: .7;
+}
+.accionesFinales{ display: grid; gap: 9px; }
+
+/* ---------- control de sonido ---------- */
+.controles{
+  position: fixed; top: 12px; right: 12px; z-index: 80;
+  display: flex; gap: 6px;
+}
+.iconoBtn{
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--linea-fuerte);
+  background: color-mix(in srgb, var(--papel) 80%, transparent);
+  backdrop-filter: blur(6px);
+  color: var(--tinta-suave);
+  font-size: 14px; line-height: 1;
+  cursor: pointer;
+  transition: transform .2s, color .2s, border-color .2s;
+}
+.iconoBtn:hover{ transform: scale(1.1); color: var(--oro); border-color: var(--oro); }
+.iconoBtn:focus-visible{ outline: 2px solid var(--oro); outline-offset: 2px; }
+
+.pieAyuda{
+  text-align: center; font-size: 11.5px; color: var(--tinta-tenue);
+  padding-top: 4px;
+}
+
+@media (min-width: 620px){
+  .escenario{ max-width: 620px; padding: 62px 24px 40px; }
+  .opcion{ font-size: 16px; padding: 15px 14px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+  .sello.golpe{ animation: none; opacity: 0; }
+}
+</style>
+
+<canvas id="lienzoFondo" aria-hidden="true"></canvas>
+<div class="vineta" aria-hidden="true"></div>
+<canvas id="lienzoFx" aria-hidden="true"></canvas>
+
+<div class="controles">
+  <button class="iconoBtn" id="btnTema" type="button" title="Cambiar tema" aria-label="Cambiar tema">◐</button>
+  <button class="iconoBtn" id="btnSonido" type="button" title="Silenciar" aria-label="Silenciar sonido">♪</button>
+</div>
+
+<main class="escenario">
+
+  <!-- ============ PORTADA ============ -->
+  <section class="pantalla portada activa" id="pantallaInicio">
+    <div class="cinta"><i class="punto"></i> Educación financiera · 11 rondas</div>
+
+    <h1 class="titulo" id="tituloPortada">
+      <span class="reng" data-anima="¿Eres un"></span>
+      <span class="reng dorado" data-anima="consumidor"></span>
+      <span class="reng dorado" data-anima="inteligente?"></span>
+    </h1>
+
+    <div class="moneda" aria-hidden="true">$</div>
+
+    <p class="bajada">Once decisiones de compra. Tu equipo decide, el recibo final dice quiénes son ustedes gastando.</p>
+
+    <div class="papel registro">
+      <div class="campo">
+        <label for="nombreEquipo">Nombre del equipo</label>
+        <input id="nombreEquipo" type="text" maxlength="26" placeholder="Los Ahorradores" autocomplete="off">
+      </div>
+      <div class="campo">
+        <label for="int1">Los tres integrantes</label>
+        <div class="integrantes">
+          <input id="int1" type="text" maxlength="14" placeholder="Nombre 1" autocomplete="off">
+          <input id="int2" type="text" maxlength="14" placeholder="Nombre 2" autocomplete="off">
+          <input id="int3" type="text" maxlength="14" placeholder="Nombre 3" autocomplete="off">
+        </div>
+      </div>
+      <button class="boton oro" id="btnEmpezar" type="button">Abrir la caja registradora</button>
+    </div>
+
+    <div class="reglas">
+      <div class="regla"><i class="num">1</i><div><b>Sin reloj.</b> Discutan en equipo todo lo que quieran antes de tocar una respuesta.</div></div>
+      <div class="regla"><i class="num">2</i><div><b>Racha.</b> Cada acierto seguido vale más: 100 → 150 → 200 → 250 → 300 puntos.</div></div>
+      <div class="regla"><i class="num">3</i><div><b>Comodines.</b> Dos veces <b>Descartar 2</b> y dos veces <b>Pista</b> en toda la partida.</div></div>
+    </div>
+
+    <p class="pieAyuda">Un celular por equipo · funciona sin internet</p>
+  </section>
+
+  <!-- ============ JUEGO ============ -->
+  <section class="pantalla" id="pantallaJuego">
+    <div class="barraSuperior">
+      <div class="marcadorFila">
+        <div class="equipoChip"><i class="bolita"></i><span id="chipEquipo">Equipo</span></div>
+        <div class="racha" id="chipRacha">RACHA ×1.5</div>
+        <div class="puntajeCaja">
+          <span class="puntaje" id="marcador">0</span>
+          <span class="etiqueta">pts</span>
+        </div>
+      </div>
+      <div class="cintaProgreso" id="cintaProgreso"></div>
+    </div>
+
+    <div class="papel tarjeta" id="tarjeta">
+      <div class="sello" id="sello"></div>
+
+      <div class="encabezado">
+        <div class="numPregunta">Decisión <b id="numActual">01</b> de 11</div>
+        <div class="valorPregunta" id="valorPregunta">vale 100 pts</div>
+      </div>
+
+      <div class="emojiPregunta" id="emojiPregunta">🛒</div>
+      <h2 class="textoPregunta" id="textoPregunta">Cargando…</h2>
+
+      <div class="opciones" id="opciones"></div>
+
+      <div class="pista" id="cajaPista"><b>Pista</b><span id="textoPista"></span></div>
+
+      <div class="comodines" id="comodines">
+        <button class="comodin" id="btnDescartar" type="button">Descartar 2 <span class="usos" id="usosDescartar">2</span></button>
+        <button class="comodin" id="btnPista" type="button">Pista <span class="usos" id="usosPista">2</span></button>
+      </div>
+
+      <div class="veredicto" id="veredicto">
+        <div class="veredictoTitulo" id="veredictoTitulo"><span id="veredictoTexto">¡Correcto!</span><span class="ganancia" id="ganancia">+100</span></div>
+        <p class="explicacion" id="explicacion"></p>
+        <button class="boton" id="btnSiguiente" type="button">Siguiente decisión</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RECIBO FINAL ============ -->
+  <section class="pantalla cierre" id="pantallaFinal">
+    <div class="papel recibo" id="recibo">
+      <div class="reciboCabeza">
+        <div class="marca">Recibo de consumo · sin devoluciones</div>
+        <div class="rango" id="rango">Consumidor inteligente</div>
+        <div class="equipo" id="reciboEquipo">Los Ahorradores</div>
+      </div>
+
+      <div class="lineas" id="lineasRecibo"></div>
+
+      <div class="total">
+        <div class="rotulo">Total acumulado</div>
+        <div class="cifra" id="cifraTotal">0</div>
+      </div>
+
+      <div class="subtotales">
+        <div class="mini"><span class="k">Aciertos</span><span class="v" id="miniAciertos">0/11</span></div>
+        <div class="mini"><span class="k">Mejor racha</span><span class="v" id="miniRacha">0</span></div>
+      </div>
+
+      <p class="mensajeCierre" id="mensajeCierre"></p>
+
+      <div class="barras" aria-hidden="true"></div>
+      <div class="codigo" id="codigoRecibo">CI-0000-00</div>
+    </div>
+
+    <div class="accionesFinales">
+      <button class="boton oro" id="btnRepetir" type="button">Jugar otra vez</button>
+      <button class="boton fantasma" id="btnRepaso" type="button">Ver el repaso de las 11 decisiones</button>
+    </div>
+    <p class="pieAyuda">Toma una captura del recibo para comparar con los otros equipos.</p>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ==========================================================
+     CONTENIDO
+     ========================================================== */
+  var PREGUNTAS = [
+    {
+      emoji: "🛒",
+      texto: "Vas al centro comercial y ves unos zapatos que te encantan, pero los que tienes todavía están en buen estado. ¿Qué haría un consumidor inteligente?",
+      opciones: [
+        "Comprarlos inmediatamente porque están de moda",
+        "Comprar dos pares por si acaso",
+        "Pensar si realmente los necesita antes de comprar",
+        "Pedir dinero prestado para comprarlos"
+      ],
+      correcta: 2,
+      resumen: "Zapatos que te encantan",
+      pista: "Piensa en la diferencia entre querer algo y necesitarlo.",
+      porque: "Si lo que tienes todavía funciona, la compra puede esperar. <b>Preguntarte si lo necesitas</b> antes de pagar es el primer filtro del consumo inteligente."
+    },
+    {
+      emoji: "💰",
+      texto: "¿Qué significa consumir inteligentemente?",
+      opciones: [
+        "Comprar siempre lo más barato",
+        "Comprar todo lo que queremos",
+        "Gastar el dinero antes de que se acabe",
+        "Tomar decisiones de compra conscientes y responsables"
+      ],
+      correcta: 3,
+      resumen: "Qué es consumir bien",
+      pista: "No se trata del precio del producto, sino de cómo decides.",
+      porque: "Consumir inteligentemente no es comprar lo más barato: es <b>administrar el dinero conscientemente</b> y responder por cada decisión."
+    },
+    {
+      emoji: "🤔",
+      texto: "¿Cuál de estos es un ejemplo de una NECESIDAD?",
+      opciones: [
+        "Un videojuego nuevo",
+        "Una camiseta porque está de moda",
+        "Alimentos para nuestra alimentación",
+        "Un accesorio que vimos en redes sociales"
+      ],
+      correcta: 2,
+      resumen: "Necesidad o deseo",
+      pista: "¿Sin cuál de estas cosas no podrías vivir?",
+      porque: "Las <b>necesidades</b> son indispensables para vivir: alimento, salud, vivienda. Lo demás son deseos, por atractivos que se vean."
+    },
+    {
+      emoji: "📱",
+      texto: "Ves en Instagram un producto que todos están comprando y quieres comprarlo inmediatamente. ¿Qué deberías hacer primero?",
+      opciones: [
+        "Comprar antes de que se agote",
+        "Preguntarte si realmente lo necesitas y si puedes pagarlo",
+        "Pedirle dinero a un amigo",
+        "Comprar dos para aprovechar"
+      ],
+      correcta: 1,
+      resumen: "El producto viral",
+      pista: "Antes de pagar, hazte dos preguntas: una sobre la necesidad y otra sobre el bolsillo.",
+      porque: "Las redes fabrican urgencia para que no pienses. <b>Necesidad + capacidad de pago</b>: si falla una de las dos, no es tu compra."
+    },
+    {
+      emoji: "🧠",
+      texto: "¿Cuál es una buena estrategia antes de comprar un producto?",
+      opciones: [
+        "Comprar lo primero que encontremos",
+        "Comparar precios y características",
+        "Elegir siempre el producto más caro",
+        "Comprar según lo que tenga el influencer favorito"
+      ],
+      correcta: 1,
+      resumen: "Estrategia antes de comprar",
+      pista: "Un buen comprador investiga antes de sacar la billetera.",
+      porque: "<b>Comparar precios y características</b> te deja pagar lo justo por lo que de verdad sirve. Ni lo primero que aparece, ni lo más caro."
+    },
+    {
+      emoji: "💸",
+      texto: "Tienes $50.000 y quieres gastar $45.000 en algo que no necesitas. ¿Qué sería más inteligente?",
+      opciones: [
+        "Gastarlos porque todavía sobran $5.000",
+        "Comprar algo más para aprovechar",
+        "Analizar si realmente vale la pena y considerar ahorrar una parte",
+        "Pedir otros $20.000 prestados"
+      ],
+      correcta: 2,
+      resumen: "$45.000 de $50.000",
+      pista: "Fíjate en cuánto te queda después de la compra, no en cuánto gastas.",
+      porque: "Gastar el <b>90% de tu dinero</b> en algo innecesario te deja sin respaldo. Analizar y ahorrar una parte es cuidar tu bienestar financiero."
+    },
+    {
+      emoji: "🚨",
+      texto: "¿Qué es una compra impulsiva?",
+      opciones: [
+        "Una compra planeada con anticipación",
+        "Una compra realizada sin pensar si realmente es necesaria",
+        "Una compra de productos básicos",
+        "Una compra después de comparar precios"
+      ],
+      correcta: 1,
+      resumen: "Compra impulsiva",
+      pista: "Impulso significa actuar antes de pensar.",
+      porque: "La compra impulsiva ocurre <b>sin analizar</b> si el producto hace falta. Suele terminar en arrepentimiento y en un presupuesto desordenado."
+    },
+    {
+      emoji: "🤑",
+      texto: "¿Cuál de estas decisiones demuestra un buen consumo inteligente?",
+      opciones: [
+        "Comprar porque está de moda",
+        "Comprar porque todos tus amigos lo tienen",
+        "Comparar opciones y elegir la que mejor se adapte a tus necesidades y presupuesto",
+        "Comprar el producto más caro porque debe ser mejor"
+      ],
+      correcta: 2,
+      resumen: "La decisión correcta",
+      pista: "La mejor opción combina dos cosas: lo que necesitas y lo que puedes pagar.",
+      porque: "Decides según <b>tus necesidades y tu presupuesto</b>, no según la moda, los amigos o el precio más alto."
+    },
+    {
+      emoji: "🔥",
+      texto: "¿Cuál frase representa mejor a un consumidor inteligente?",
+      opciones: [
+        "«Lo quiero, entonces lo compro.»",
+        "«Si está en oferta, tengo que comprarlo.»",
+        "«Primero pienso, comparo y después decido.»",
+        "«Mis amigos lo tienen, yo también lo necesito.»"
+      ],
+      correcta: 2,
+      resumen: "La frase del consumidor",
+      pista: "El orden de las palabras es lo importante: ¿qué va primero?",
+      porque: "<b>Pensar, comparar y después decidir</b>: ese orden es todo el hábito del consumo inteligente resumido en una frase."
+    },
+    {
+      emoji: "🏆",
+      texto: "¿Para qué sirve practicar el consumo inteligente?",
+      opciones: [
+        "Para gastar todo nuestro dinero de manera organizada",
+        "Para comprar más cosas",
+        "Para tomar mejores decisiones, controlar gastos y cuidar nuestros recursos",
+        "Para nunca volver a comprar nada"
+      ],
+      correcta: 2,
+      resumen: "Para qué sirve",
+      pista: "No es para gastar más, ni para dejar de comprar para siempre.",
+      porque: "Sirve para <b>decidir mejor, controlar los gastos y cuidar los recursos</b>. A eso se le llama bienestar financiero."
+    },
+    {
+      emoji: "👀",
+      texto: "Si una oferta dice «¡50% de descuento!», ¿significa automáticamente que debes comprar?",
+      opciones: [
+        "Sí, porque estás ahorrando",
+        "Sí, porque las ofertas siempre convienen",
+        "No, primero debes analizar si realmente lo necesitas y si es conveniente",
+        "Sí, especialmente si quedan pocas unidades"
+      ],
+      correcta: 2,
+      resumen: "El 50% de descuento",
+      pista: "Un descuento sobre algo que no necesitas sigue saliendo de tu bolsillo.",
+      porque: "Un descuento solo es ahorro si <b>ibas a comprar el producto de todos modos</b>. Si no lo necesitas, ese 50% que «ahorras» es 100% de gasto."
+    }
+  ];
+
+  var VALORES = [100, 150, 200, 250, 300];
+  var LETRAS = ["A", "B", "C", "D"];
+
+  var RANGOS = [
+    { min: 11, nombre: "Maestro del bolsillo", msg: "Once de once. Este equipo no compra por impulso: compra por decisión. Sus profesores deberían pedirles consejo." },
+    { min: 9,  nombre: "Consumidor inteligente", msg: "Piensan, comparan y después deciden. Ese es exactamente el hábito que cuida el dinero a largo plazo." },
+    { min: 6,  nombre: "Comprador en formación", msg: "Van por buen camino: ya distinguen necesidades de deseos. Repasen las decisiones que fallaron y quedan listos." },
+    { min: 0,  nombre: "Comprador impulsivo", msg: "La publicidad todavía les gana. Vuelvan a jugar preguntándose siempre dos cosas: ¿lo necesito? ¿puedo pagarlo?" }
+  ];
+
+  /* ==========================================================
+     ESTADO
+     ========================================================== */
+  var estado = {
+    equipo: "Equipo",
+    idx: 0,
+    puntos: 0,
+    racha: 0,
+    mejorRacha: 0,
+    aciertos: 0,
+    orden: [],
+    historial: [],
+    descartarLeft: 2,
+    pistaLeft: 2,
+    bloqueado: false,
+    silencio: false
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* ==========================================================
+     SONIDO (WebAudio, sin archivos externos)
+     ========================================================== */
+  var audio = null;
+  function ctx(){
+    if (estado.silencio) return null;
+    if (!audio){
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      audio = new AC();
+    }
+    if (audio.state === "suspended") audio.resume();
+    return audio;
+  }
+  function tono(freq, inicio, dur, tipo, vol){
+    var a = ctx(); if (!a) return;
+    var osc = a.createOscillator();
+    var g = a.createGain();
+    osc.type = tipo || "sine";
+    osc.frequency.setValueAtTime(freq, a.currentTime + inicio);
+    g.gain.setValueAtTime(0, a.currentTime + inicio);
+    g.gain.linearRampToValueAtTime(vol || .16, a.currentTime + inicio + .012);
+    g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + inicio + dur);
+    osc.connect(g); g.connect(a.destination);
+    osc.start(a.currentTime + inicio);
+    osc.stop(a.currentTime + inicio + dur + .04);
+  }
+  var sonido = {
+    toque:   function(){ tono(420, 0, .07, "triangle", .07); },
+    acierto: function(){ tono(523.25,0,.16,"triangle",.15); tono(659.25,.09,.16,"triangle",.14); tono(783.99,.18,.32,"triangle",.13); },
+    fallo:   function(){ tono(196,0,.20,"sawtooth",.09); tono(146.83,.10,.30,"sawtooth",.08); },
+    comodin: function(){ tono(880,0,.07,"square",.06); tono(1174.66,.06,.10,"square",.05); },
+    caja:    function(){ tono(1046.5,0,.06,"square",.07); tono(1318.5,.05,.09,"square",.06); tono(1568,.11,.22,"triangle",.09); },
+    final:   function(){
+      [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach(function(f, i){
+        tono(f, i * .11, .5, "triangle", .13);
+      });
+    }
+  };
+  function vibrar(patron){
+    if (navigator.vibrate && !estado.silencio) { try { navigator.vibrate(patron); } catch(e){} }
+  }
+
+  /* ==========================================================
+     FONDO ANIMADO — monedas flotando
+     ========================================================== */
+  var reducido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var cFondo = $("lienzoFondo"), xFondo = cFondo.getContext("2d");
+  var cFx = $("lienzoFx"), xFx = cFx.getContext("2d");
+  var monedas = [], confeti = [], dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  function dimensionar(){
+    [cFondo, cFx].forEach(function(c){
+      c.width = window.innerWidth * dpr;
+      c.height = window.innerHeight * dpr;
+    });
+    xFondo.setTransform(dpr,0,0,dpr,0,0);
+    xFx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  dimensionar();
+  window.addEventListener("resize", dimensionar);
+
+  function tinta(nombre){
+    return getComputedStyle(document.documentElement).getPropertyValue(nombre).trim();
+  }
+
+  function crearMonedas(){
+    monedas = [];
+    var n = window.innerWidth < 520 ? 13 : 20;
+    for (var i = 0; i < n; i++){
+      monedas.push({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        r: 6 + Math.random() * 16,
+        vy: .10 + Math.random() * .28,
+        fase: Math.random() * Math.PI * 2,
+        vel: .004 + Math.random() * .008,
+        op: .05 + Math.random() * .10
+      });
+    }
+  }
+  crearMonedas();
+  window.addEventListener("resize", crearMonedas);
+
+  function pintarFondo(){
+    xFondo.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    var oro = tinta("--oro") || "#A9772B";
+    for (var i = 0; i < monedas.length; i++){
+      var m = monedas[i];
+      m.y -= m.vy;
+      m.fase += m.vel;
+      if (m.y < -m.r * 2){ m.y = window.innerHeight + m.r * 2; m.x = Math.random() * window.innerWidth; }
+      var ancho = Math.abs(Math.cos(m.fase)) * m.r + m.r * .12;
+      xFondo.save();
+      xFondo.globalAlpha = m.op;
+      xFondo.strokeStyle = oro;
+      xFondo.fillStyle = oro;
+      xFondo.lineWidth = 1.2;
+      xFondo.beginPath();
+      xFondo.ellipse(m.x + Math.sin(m.fase * .6) * 14, m.y, ancho, m.r, 0, 0, Math.PI * 2);
+      xFondo.fill();
+      xFondo.globalAlpha = m.op * 2.1;
+      xFondo.stroke();
+      xFondo.restore();
+    }
+  }
+
+  function lanzarConfeti(cantidad, desdeArriba){
+    var cols = [tinta("--oro-vivo"), tinta("--oro"), tinta("--bien"), tinta("--tinta-suave"), tinta("--papel-alto")];
+    for (var i = 0; i < cantidad; i++){
+      confeti.push({
+        x: window.innerWidth * (.15 + Math.random() * .7),
+        y: desdeArriba ? -20 - Math.random() * 120 : window.innerHeight * .42,
+        vx: (Math.random() - .5) * 7,
+        vy: desdeArriba ? 2 + Math.random() * 3 : -(4 + Math.random() * 8),
+        g: .16 + Math.random() * .12,
+        w: 4 + Math.random() * 7,
+        h: 7 + Math.random() * 9,
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - .5) * .3,
+        col: cols[(Math.random() * cols.length) | 0],
+        vida: 1
+      });
+    }
+  }
+
+  function pintarFx(){
+    xFx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    for (var i = confeti.length - 1; i >= 0; i--){
+      var p = confeti[i];
+      p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.vx *= .995;
+      if (p.y > window.innerHeight + 40){ confeti.splice(i, 1); continue; }
+      xFx.save();
+      xFx.translate(p.x, p.y);
+      xFx.rotate(p.rot);
+      xFx.fillStyle = p.col;
+      xFx.globalAlpha = .92;
+      xFx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      xFx.restore();
+    }
+  }
+
+  function bucle(){
+    if (!reducido) pintarFondo();
+    pintarFx();
+    requestAnimationFrame(bucle);
+  }
+  bucle();
+
+  /* ==========================================================
+     PORTADA — letras
+     ========================================================== */
+  (function animarTitulo(){
+    var lineas = document.querySelectorAll("#tituloPortada .reng");
+    var n = 0;
+    lineas.forEach(function(el){
+      var txt = el.getAttribute("data-anima") || "";
+      el.textContent = "";
+      for (var i = 0; i < txt.length; i++){
+        var s = document.createElement("span");
+        s.className = "car";
+        s.style.setProperty("--i", n++);
+        s.textContent = txt[i] === " " ? " " : txt[i];
+        el.appendChild(s);
+      }
+    });
+  })();
+
+  /* ==========================================================
+     UTILIDADES
+     ========================================================== */
+  function barajar(arr){
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--){
+      var j = (Math.random() * (i + 1)) | 0;
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function mostrarPantalla(id){
+    document.querySelectorAll(".pantalla").forEach(function(p){ p.classList.remove("activa"); });
+    $(id).classList.add("activa");
+    window.scrollTo({ top: 0, behavior: reducido ? "auto" : "smooth" });
+  }
+  function valorActual(){
+    return VALORES[Math.min(estado.racha, VALORES.length - 1)];
+  }
+
+  /* ==========================================================
+     FLUJO DEL JUEGO
+     ========================================================== */
+  function empezar(){
+    var nombre = $("nombreEquipo").value.trim();
+    var ints = [$("int1").value.trim(), $("int2").value.trim(), $("int3").value.trim()].filter(Boolean);
+    estado.equipo = nombre || (ints.length ? ints.join(" · ") : "Equipo sin nombre");
+    estado.idx = 0;
+    estado.puntos = 0;
+    estado.racha = 0;
+    estado.mejorRacha = 0;
+    estado.aciertos = 0;
+    estado.historial = [];
+    estado.descartarLeft = 2;
+    estado.pistaLeft = 2;
+    estado.orden = PREGUNTAS.map(function(_, i){ return i; });
+
+    $("chipEquipo").textContent = estado.equipo;
+    $("marcador").textContent = "0";
+    construirCinta();
+    sonido.caja();
+    vibrar(18);
+    mostrarPantalla("pantallaJuego");
+    pintarPregunta();
+  }
+
+  function construirCinta(){
+    var cinta = $("cintaProgreso");
+    cinta.innerHTML = "";
+    for (var i = 0; i < PREGUNTAS.length; i++) cinta.appendChild(document.createElement("i"));
+  }
+
+  function actualizarCinta(){
+    var hijos = $("cintaProgreso").children;
+    for (var i = 0; i < hijos.length; i++){
+      hijos[i].className = "";
+      if (estado.historial[i]) hijos[i].className = estado.historial[i].bien ? "ok" : "no";
+      else if (i === estado.idx) hijos[i].className = "hoy";
+    }
+  }
+
+  function pintarPregunta(){
+    var p = PREGUNTAS[estado.idx];
+    estado.bloqueado = false;
+
+    $("numActual").textContent = String(estado.idx + 1).padStart(2, "0");
+    $("valorPregunta").textContent = "vale " + valorActual() + " pts";
+    $("emojiPregunta").textContent = p.emoji;
+    $("textoPregunta").textContent = p.texto;
+    $("cajaPista").classList.remove("visible");
+    $("textoPista").textContent = "";
+    $("veredicto").classList.remove("visible");
+    $("comodines").style.display = "grid";
+
+    // barajar las opciones sin perder cuál es la correcta
+    var idxs = barajar([0, 1, 2, 3]);
+    var caja = $("opciones");
+    caja.innerHTML = "";
+    idxs.forEach(function(orig, pos){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "opcion";
+      b.style.setProperty("--i", pos);
+      b.dataset.orig = orig;
+      b.innerHTML =
+        '<span class="letra">' + LETRAS[pos] + '</span>' +
+        '<span class="txt"></span>' +
+        '<span class="marca"></span>';
+      b.querySelector(".txt").textContent = p.opciones[orig];
+      b.addEventListener("click", function(){ responder(b, orig); });
+      caja.appendChild(b);
+    });
+
+    var t = $("tarjeta");
+    t.classList.remove("sale");
+    t.classList.remove("entra");
+    void t.offsetWidth;
+    t.classList.add("entra");
+
+    actualizarComodines();
+    actualizarCinta();
+  }
+
+  function actualizarComodines(){
+    $("usosDescartar").textContent = estado.descartarLeft;
+    $("usosPista").textContent = estado.pistaLeft;
+    $("btnDescartar").disabled = estado.descartarLeft <= 0 || estado.bloqueado;
+    $("btnPista").disabled = estado.pistaLeft <= 0 || estado.bloqueado;
+  }
+
+  function responder(boton, elegida){
+    if (estado.bloqueado) return;
+    estado.bloqueado = true;
+
+    var p = PREGUNTAS[estado.idx];
+    var bien = elegida === p.correcta;
+    var ganado = 0;
+
+    if (bien){
+      ganado = valorActual();
+      estado.puntos += ganado;
+      estado.racha += 1;
+      estado.aciertos += 1;
+      if (estado.racha > estado.mejorRacha) estado.mejorRacha = estado.racha;
+    } else {
+      estado.racha = 0;
+    }
+
+    estado.historial[estado.idx] = { bien: bien, puntos: ganado, resumen: p.resumen };
+
+    // marcar las opciones
+    var botones = $("opciones").querySelectorAll(".opcion");
+    botones.forEach(function(b){
+      b.disabled = true;
+      var orig = Number(b.dataset.orig);
+      if (orig === p.correcta){
+        b.classList.add("correcta");
+        b.classList.remove("descartada", "apagada");
+        b.querySelector(".marca").textContent = "correcta";
+      } else if (b === boton){
+        b.classList.add("errada");
+        b.querySelector(".marca").textContent = "su respuesta";
+      } else {
+        b.classList.add("apagada");
+      }
+    });
+
+    // sello de goma
+    var sello = $("sello");
+    sello.textContent = bien ? "¡Bien!" : "Uy…";
+    sello.className = "sello " + (bien ? "bien" : "mal");
+    void sello.offsetWidth;
+    sello.classList.add("golpe");
+
+    if (bien){
+      sonido.acierto();
+      vibrar([12, 40, 12]);
+      lanzarConfeti(38, false);
+      puntoFlotante(boton, "+" + ganado);
+      animarMarcador();
+    } else {
+      sonido.fallo();
+      vibrar([50, 60, 50]);
+    }
+
+    // veredicto
+    var vt = $("veredictoTitulo");
+    vt.className = "veredictoTitulo " + (bien ? "bien" : "mal");
+    $("veredictoTexto").textContent = bien
+      ? (estado.racha >= 3 ? "¡Racha de " + estado.racha + "!" : "¡Decisión correcta!")
+      : "Esa decisión sale cara";
+    $("ganancia").textContent = bien ? "+" + ganado : "+0";
+    $("ganancia").style.color = bien ? "var(--bien)" : "var(--tinta-tenue)";
+    $("explicacion").innerHTML = p.porque;
+    $("btnSiguiente").textContent = estado.idx === PREGUNTAS.length - 1 ? "Ver el recibo final" : "Siguiente decisión";
+    $("veredicto").classList.add("visible");
+    $("comodines").style.display = "none";
+
+    actualizarRacha();
+    actualizarCinta();
+    actualizarComodines();
+
+    setTimeout(function(){
+      $("btnSiguiente").scrollIntoView({ block: "nearest", behavior: reducido ? "auto" : "smooth" });
+    }, 340);
+  }
+
+  function animarMarcador(){
+    var el = $("marcador");
+    var desde = Number(el.textContent) || 0;
+    var hasta = estado.puntos;
+    var t0 = performance.now();
+    el.classList.remove("sube"); void el.offsetWidth; el.classList.add("sube");
+    (function paso(t){
+      var k = Math.min((t - t0) / 620, 1);
+      var e = 1 - Math.pow(1 - k, 3);
+      el.textContent = Math.round(desde + (hasta - desde) * e);
+      if (k < 1) requestAnimationFrame(paso);
+    })(t0);
+  }
+
+  function actualizarRacha(){
+    var chip = $("chipRacha");
+    if (estado.racha >= 2){
+      chip.textContent = "RACHA ×" + estado.racha;
+      chip.classList.add("viva");
+    } else {
+      chip.classList.remove("viva");
+    }
+  }
+
+  function puntoFlotante(ref, texto){
+    var r = ref.getBoundingClientRect();
+    var el = document.createElement("div");
+    el.className = "flotante";
+    el.textContent = texto;
+    el.style.left = (r.left + r.width / 2) + "px";
+    el.style.top = (r.top) + "px";
+    document.body.appendChild(el);
+    setTimeout(function(){ el.remove(); }, 1200);
+  }
+
+  function siguiente(){
+    if (estado.idx >= PREGUNTAS.length - 1){ terminar(); return; }
+    var t = $("tarjeta");
+    t.classList.remove("entra");
+    t.classList.add("sale");
+    sonido.toque();
+    setTimeout(function(){
+      estado.idx += 1;
+      pintarPregunta();
+    }, reducido ? 0 : 300);
+  }
+
+  /* ---------- comodines ---------- */
+  function usarDescartar(){
+    if (estado.descartarLeft <= 0 || estado.bloqueado) return;
+    estado.descartarLeft -= 1;
+    var p = PREGUNTAS[estado.idx];
+    var malas = [];
+    $("opciones").querySelectorAll(".opcion").forEach(function(b){
+      if (Number(b.dataset.orig) !== p.correcta && !b.classList.contains("descartada")) malas.push(b);
+    });
+    barajar(malas).slice(0, 2).forEach(function(b, i){
+      setTimeout(function(){
+        b.classList.add("descartada");
+        b.disabled = true;
+      }, i * 160);
+    });
+    sonido.comodin();
+    vibrar(10);
+    actualizarComodines();
+  }
+
+  function usarPista(){
+    if (estado.pistaLeft <= 0 || estado.bloqueado) return;
+    estado.pistaLeft -= 1;
+    $("textoPista").textContent = PREGUNTAS[estado.idx].pista;
+    $("cajaPista").classList.add("visible");
+    sonido.comodin();
+    vibrar(10);
+    actualizarComodines();
+  }
+
+  /* ---------- final ---------- */
+  function terminar(){
+    var rango = RANGOS.find(function(r){ return estado.aciertos >= r.min; });
+    $("rango").textContent = rango.nombre;
+    $("mensajeCierre").textContent = rango.msg;
+    $("reciboEquipo").textContent = estado.equipo;
+    $("miniAciertos").textContent = estado.aciertos + "/" + PREGUNTAS.length;
+    $("miniRacha").textContent = estado.mejorRacha;
+
+    var lineas = $("lineasRecibo");
+    lineas.innerHTML = "";
+    estado.historial.forEach(function(h, i){
+      var d = document.createElement("div");
+      d.className = "linea " + (h.bien ? "ok" : "no");
+      d.style.setProperty("--i", i);
+      d.innerHTML =
+        '<span class="idx">' + String(i + 1).padStart(2, "0") + '</span>' +
+        '<span class="desc"></span>' +
+        '<span class="val">' + (h.bien ? "+" + h.puntos : "—") + '</span>';
+      d.querySelector(".desc").textContent = h.resumen;
+      lineas.appendChild(d);
+    });
+
+    var codigo = "CI-" + String(estado.puntos).padStart(4, "0") + "-" + String(estado.aciertos).padStart(2, "0");
+    $("codigoRecibo").textContent = codigo;
+
+    mostrarPantalla("pantallaFinal");
+    sonido.final();
+    vibrar([20, 60, 20, 60, 40]);
+    lanzarConfeti(120, true);
+    setTimeout(function(){ lanzarConfeti(80, true); }, 550);
+
+    // contador del total
+    var el = $("cifraTotal");
+    var t0 = performance.now();
+    (function paso(t){
+      var k = Math.min((t - t0) / 1400, 1);
+      var e = 1 - Math.pow(1 - k, 4);
+      el.textContent = Math.round(estado.puntos * e);
+      if (k < 1) requestAnimationFrame(paso);
+    })(t0);
+  }
+
+  function repaso(){
+    var caja = $("lineasRecibo");
+    if (caja.dataset.modo === "repaso"){
+      terminarRepaso();
+      return;
+    }
+    caja.dataset.modo = "repaso";
+    caja.innerHTML = "";
+    PREGUNTAS.forEach(function(p, i){
+      var d = document.createElement("div");
+      d.className = "linea " + (estado.historial[i] && estado.historial[i].bien ? "ok" : "no");
+      d.style.setProperty("--i", i);
+      d.style.gridTemplateColumns = "auto 1fr";
+      d.innerHTML = '<span class="idx">' + String(i + 1).padStart(2, "0") + '</span><span></span>';
+      var cuerpo = d.children[1];
+      var t = document.createElement("div");
+      t.style.color = "var(--tinta)";
+      t.style.fontWeight = "600";
+      t.style.whiteSpace = "normal";
+      t.textContent = p.opciones[p.correcta];
+      var e = document.createElement("div");
+      e.style.color = "var(--tinta-suave)";
+      e.style.fontSize = "12.5px";
+      e.style.marginTop = "2px";
+      e.innerHTML = p.porque;
+      cuerpo.appendChild(t);
+      cuerpo.appendChild(e);
+      caja.appendChild(d);
+    });
+    $("btnRepaso").textContent = "Volver al recibo";
+    sonido.toque();
+    caja.scrollIntoView({ block: "start", behavior: reducido ? "auto" : "smooth" });
+  }
+
+  function terminarRepaso(){
+    $("lineasRecibo").dataset.modo = "";
+    $("btnRepaso").textContent = "Ver el repaso de las 11 decisiones";
+    terminar();
+  }
+
+  function reiniciar(){
+    $("lineasRecibo").dataset.modo = "";
+    $("btnRepaso").textContent = "Ver el repaso de las 11 decisiones";
+    confeti = [];
+    mostrarPantalla("pantallaInicio");
+    sonido.toque();
+  }
+
+  /* ==========================================================
+     CONTROLES
+     ========================================================== */
+  $("btnEmpezar").addEventListener("click", empezar);
+  $("btnSiguiente").addEventListener("click", siguiente);
+  $("btnDescartar").addEventListener("click", usarDescartar);
+  $("btnPista").addEventListener("click", usarPista);
+  $("btnRepetir").addEventListener("click", reiniciar);
+  $("btnRepaso").addEventListener("click", repaso);
+
+  $("nombreEquipo").addEventListener("keydown", function(e){ if (e.key === "Enter") empezar(); });
+  ["int1","int2","int3"].forEach(function(id){
+    $(id).addEventListener("keydown", function(e){ if (e.key === "Enter") empezar(); });
+  });
+
+  $("btnSonido").addEventListener("click", function(){
+    estado.silencio = !estado.silencio;
+    this.textContent = estado.silencio ? "✕" : "♪";
+    this.setAttribute("aria-label", estado.silencio ? "Activar sonido" : "Silenciar sonido");
+    if (!estado.silencio) sonido.toque();
+  });
+
+  $("btnTema").addEventListener("click", function(){
+    var raiz = document.documentElement;
+    var actual = raiz.getAttribute("data-theme");
+    if (!actual){
+      var oscuroSistema = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      actual = oscuroSistema ? "dark" : "light";
+    }
+    raiz.setAttribute("data-theme", actual === "dark" ? "light" : "dark");
+    sonido.toque();
+  });
+
+  // teclado, para cuando se proyecta desde un computador
+  document.addEventListener("keydown", function(e){
+    if (!$("pantallaJuego").classList.contains("activa")) return;
+    var k = e.key.toUpperCase();
+    if (estado.bloqueado){
+      if (e.key === "Enter" || e.key === " "){ e.preventDefault(); siguiente(); }
+      return;
+    }
+    var pos = LETRAS.indexOf(k);
+    if (pos === -1 && k >= "1" && k <= "4") pos = Number(k) - 1;
+    if (pos >= 0){
+      var b = $("opciones").children[pos];
+      if (b && !b.disabled) b.click();
+    }
+    if (k === "D") usarDescartar();
+    if (k === "P") usarPista();
+  });
+
+  // primer gesto: despierta el audio del navegador
+  document.addEventListener("pointerdown", function despertar(){
+    ctx();
+    document.removeEventListener("pointerdown", despertar);
+  }, { once: true });
+
+})();
+</script>
