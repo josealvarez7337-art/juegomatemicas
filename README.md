@@ -15,8 +15,10 @@ entre ronda y ronda.
    pierde y no suma puntos.
 4. Cada acierto seguido vale más (100 → 150 → 200 → 250 → 300 puntos).
    Un error reinicia la racha.
-5. Al cerrar la ronda aparece el **marcador**: puesto, puntos, aciertos y
-   quién subió o bajó de posición.
+5. **Después de cada respuesta** aparece el marcador: puesto, puntos, aciertos,
+   quién subió o bajó de posición, y el equipo que acaba de jugar resaltado en
+   dorado. Cuando la ronda se completa, el marcador lo anuncia y el botón pasa
+   a la ronda siguiente.
 6. Comodines por equipo para todo el torneo: **3 descartes**, con un máximo de
    **uno por pregunta**, y **2 pistas**. El reloj no se detiene al usarlos.
 7. Al final sale el recibo del torneo con podio, tabla de equipos y el rango

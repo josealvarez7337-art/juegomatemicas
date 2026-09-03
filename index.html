@@ -606,6 +606,11 @@ body{
   text-align: center; color: var(--tinta-tenue);
   border: 1px solid var(--linea-fuerte); border-radius: 3px; line-height: 28px; height: 30px;
 }
+.filaPos.actual{
+  background: color-mix(in srgb, var(--oro) 9%, transparent);
+  box-shadow: inset 3px 0 0 var(--oro);
+}
+.filaPos.actual .nom{ color: var(--oro); }
 .filaPos.p1 .puesto{ color: var(--papel-alto); background: var(--oro); border-color: var(--oro); }
 .filaPos.p2 .puesto{ color: var(--tinta); border-color: var(--tinta-suave); }
 .filaPos .cuerpo{ min-width: 0; display: flex; flex-direction: column; gap: 5px; }
@@ -787,7 +792,7 @@ body{
     <div class="reglas">
       <div class="regla"><i class="num">1</i><div><b>Por turnos.</b> En cada ronda todos los equipos responden la misma pregunta y se van pasando el celular. El orden rota en cada ronda.</div></div>
       <div class="regla"><i class="num">2</i><div><b>20 segundos.</b> Cada equipo tiene 20 segundos por pregunta. Si se les acaba el tiempo, la decisión se pierde y no suma puntos.</div></div>
-      <div class="regla"><i class="num">3</i><div><b>Marcador.</b> Al cerrar cada ronda aparece la tabla de posiciones: puesto, puntos y quién subió o bajó.</div></div>
+      <div class="regla"><i class="num">3</i><div><b>Marcador.</b> Después de <b>cada</b> respuesta aparece la tabla de posiciones: puesto, puntos y quién subió o bajó.</div></div>
       <div class="regla"><i class="num">4</i><div><b>Racha.</b> Cada acierto seguido vale más: 100 → 150 → 200 → 250 → 300 puntos. Un error la reinicia.</div></div>
       <div class="regla"><i class="num">5</i><div><b>Comodines.</b> Cada equipo tiene <b>3 descartes</b> para todo el torneo, y solo puede usar <b>uno por pregunta</b>. Además, 2 pistas.</div></div>
     </div>
@@ -1553,10 +1558,10 @@ body{
     $("ganancia").style.color = bien ? "var(--bien)" : "var(--tinta-tenue)";
     $("explicacion").innerHTML = p.porque;
 
-    var ultimoTurno = estado.turno === estado.equipos.length - 1;
-    var ultimaRonda = estado.ronda === PREGUNTAS.length - 1;
-    $("btnSiguiente").textContent = !ultimoTurno ? "Pasar el celular"
-      : (ultimaRonda ? "Ver el recibo final" : "Ver el marcador");
+    var esElFinal = estado.turno === estado.equipos.length - 1 &&
+                    estado.ronda === PREGUNTAS.length - 1;
+    $("btnSiguiente").textContent = esElFinal ? "Ver el recibo final"
+      : (solo() ? "Siguiente decisión" : "Ver el marcador");
     $("veredicto").classList.add("visible");
     $("comodines").style.display = "none";
 
@@ -1610,16 +1615,11 @@ body{
     t.classList.add("sale");
     sonido.toque();
     setTimeout(function(){
-      if (estado.turno < estado.equipos.length - 1){
-        estado.turno += 1;
-        irATurno();
-      } else if (estado.ronda < PREGUNTAS.length - 1){
-        estado.turno = 0;
-        if (solo()){ estado.ronda += 1; irATurno(); }
-        else mostrarMarcador();
-      } else {
-        terminar();
-      }
+      var ultimoTurno = estado.turno === estado.equipos.length - 1;
+      var ultimaRonda = estado.ronda === PREGUNTAS.length - 1;
+      if (ultimoTurno && ultimaRonda){ terminar(); return; }
+      if (solo()){ estado.ronda += 1; irATurno(); return; }
+      mostrarMarcador();
     }, reducido ? 0 : 300);
   }
 
@@ -1741,13 +1741,18 @@ body{
     var caja = $("posiciones");
     caja.innerHTML = "";
 
-    $("marcadorRonda").textContent = "Tras la ronda " + String(estado.ronda + 1).padStart(2, "0");
+    var ultimoTurno = estado.turno === estado.equipos.length - 1;
+    var recienJugo = equipoActual();
+    var ronda = String(estado.ronda + 1).padStart(2, "0");
+    $("marcadorRonda").textContent = ultimoTurno
+      ? "Ronda " + ronda + " completa"
+      : "Ronda " + ronda + " · turno " + (estado.turno + 1) + " de " + estado.equipos.length;
 
     tabla.forEach(function(eq, i){
       var puesto = i + 1;
       var cambio = eq.puestoPrevio - puesto;
       var fila = document.createElement("div");
-      fila.className = "filaPos p" + Math.min(puesto, 3);
+      fila.className = "filaPos p" + Math.min(puesto, 3) + (eq === recienJugo ? " actual" : "");
       fila.style.setProperty("--i", i);
       var deltaTxt = cambio > 0 ? "▲ " + cambio : (cambio < 0 ? "▼ " + Math.abs(cambio) : "sin cambio");
       var deltaCls = cambio > 0 ? "sube" : (cambio < 0 ? "baja" : "");
@@ -1761,7 +1766,8 @@ body{
           '<span class="pts">' + eq.puntos + '</span>' +
           '<span class="delta ' + deltaCls + '">' + deltaTxt + '</span>' +
         '</span>';
-      fila.querySelector(".nom").textContent = eq.nombre + "  ·  " + eq.aciertos + "/" + (estado.ronda + 1);
+      var respondidas = eq.historial.filter(Boolean).length;
+      fila.querySelector(".nom").textContent = eq.nombre + "  ·  " + eq.aciertos + "/" + respondidas;
       caja.appendChild(fila);
       var barra = fila.querySelector(".riel i");
       requestAnimationFrame(function(){
@@ -1772,20 +1778,30 @@ body{
 
     var lider = tabla[0], segundo = tabla[1];
     var dif = segundo ? lider.puntos - segundo.puntos : 0;
-    var faltan = PREGUNTAS.length - estado.ronda - 1;
-    $("tableroPie").textContent = dif === 0
-      ? "Empate en la punta. Quedan " + faltan + " rondas para desempatar."
-      : lider.nombre + " lidera por " + dif + " puntos. Quedan " + faltan + " rondas.";
+    var porResponder = estado.equipos.length - estado.turno - 1;
+    var cabeza = dif === 0
+      ? "Empate en la punta."
+      : lider.nombre + " lidera por " + dif + " puntos.";
+    $("tableroPie").textContent = ultimoTurno
+      ? cabeza + " Quedan " + (PREGUNTAS.length - estado.ronda - 1) + " rondas."
+      : cabeza + " Falta" + (porResponder === 1 ? " " : "n ") + porResponder +
+        (porResponder === 1 ? " equipo" : " equipos") + " por responder esta ronda.";
 
-    $("btnSiguienteRonda").textContent = "Empezar la ronda " + String(estado.ronda + 2).padStart(2, "0");
+    $("btnSiguienteRonda").textContent = ultimoTurno
+      ? "Empezar la ronda " + String(estado.ronda + 2).padStart(2, "0")
+      : "Pasar el celular";
     mostrarPantalla("pantallaMarcador");
     sonido.tablero();
     vibrar(15);
   }
 
-  function siguienteRonda(){
-    estado.ronda += 1;
-    estado.turno = 0;
+  function avanzarDesdeMarcador(){
+    if (estado.turno < estado.equipos.length - 1){
+      estado.turno += 1;
+    } else {
+      estado.ronda += 1;
+      estado.turno = 0;
+    }
     irATurno();
   }
 
@@ -1922,7 +1938,7 @@ body{
   $("btnEmpezar").addEventListener("click", empezar);
   $("btnComenzarTurno").addEventListener("click", comenzarTurno);
   $("btnSiguiente").addEventListener("click", siguiente);
-  $("btnSiguienteRonda").addEventListener("click", siguienteRonda);
+  $("btnSiguienteRonda").addEventListener("click", avanzarDesdeMarcador);
   $("btnDescartar").addEventListener("click", usarDescartar);
   $("btnPista").addEventListener("click", usarPista);
   $("btnRepetir").addEventListener("click", reiniciar);
@@ -1948,7 +1964,7 @@ body{
       e.preventDefault(); comenzarTurno(); return;
     }
     if ($("pantallaMarcador").classList.contains("activa") && (e.key === "Enter" || e.key === " ")){
-      e.preventDefault(); siguienteRonda(); return;
+      e.preventDefault(); avanzarDesdeMarcador(); return;
     }
     if (!$("pantallaJuego").classList.contains("activa")) return;
     var k = e.key.toUpperCase();
