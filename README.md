@@ -1,19 +1,29 @@
 # ¿Eres un consumidor inteligente?
 
-Juego interactivo de educación financiera: 11 decisiones de compra, pensado para
-jugarse por equipos de tres personas en un solo celular.
+Torneo interactivo de educación financiera: 11 decisiones de compra que varios
+equipos juegan por turnos en un mismo celular, con marcador de posiciones
+entre ronda y ronda.
 
 ## Cómo se juega
 
-1. Cada equipo escribe su nombre y el de sus tres integrantes.
-2. Responden las 11 decisiones. **No hay reloj**: pueden discutir todo lo que quieran.
-3. Cada acierto seguido vale más (100 → 150 → 200 → 250 → 300 puntos). Un error corta la racha.
-4. Tienen dos comodines, dos usos cada uno: **Descartar 2** y **Pista**.
-5. Al final sale un recibo de compra con el puntaje, los aciertos y el rango del equipo.
-   Toma una captura para comparar con los otros equipos.
+1. En la portada se registran los equipos (de 1 a 6).
+2. Cada ronda es una pregunta: el celular pasa de equipo en equipo y todos
+   responden la misma decisión. **El orden de turnos rota en cada ronda.**
+3. **No hay reloj**: cada equipo discute lo que quiera antes de responder.
+4. Cada acierto seguido vale más (100 → 150 → 200 → 250 → 300 puntos).
+   Un error reinicia la racha.
+5. Al cerrar la ronda aparece el **marcador**: puesto, puntos, aciertos y
+   quién subió o bajó de posición.
+6. Comodines por equipo para todo el torneo: **3 descartes**, con un máximo de
+   **uno por pregunta**, y **2 pistas**.
+7. Al final sale el recibo del torneo con podio, tabla de equipos y el rango
+   del campeón. Tomen una captura para dejar constancia.
 
-Después de cada respuesta aparece la explicación del concepto financiero, y al
-terminar se puede abrir el repaso de las 11 decisiones.
+Después de cada respuesta se muestra la explicación del concepto financiero, y
+al terminar se puede abrir el repaso de las 11 decisiones.
+
+Si se registra un solo equipo, el juego corre en modo individual: sin pantalla
+de turnos ni marcador, y el recibo final detalla las 11 decisiones una por una.
 
 ## Cómo abrirlo
 
