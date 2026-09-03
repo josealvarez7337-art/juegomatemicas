@@ -511,6 +511,78 @@ body{
 }
 
 /* ============================================================
+   CRONÓMETRO Y PULLAS
+   ============================================================ */
+.crono{
+  display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;
+  --tono-crono: var(--bien);
+}
+.crono.tension{ --tono-crono: var(--oro-vivo); }
+.crono.critico{ --tono-crono: var(--mal); }
+
+.cronoRiel{
+  position: relative; height: 18px; overflow: hidden;
+  border: 1.5px solid var(--tinta); border-radius: 3px;
+  background: var(--papel-alto);
+  box-shadow: inset 0 2px 5px -2px color-mix(in srgb, var(--tinta) 45%, transparent);
+}
+.cronoFill{
+  position: relative; height: 100%; width: 100%;
+  background-image:
+    repeating-linear-gradient(115deg,
+      color-mix(in srgb, var(--papel-alto) 55%, transparent) 0 9px,
+      transparent 9px 20px),
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--tono-crono) 62%, var(--sello)),
+      var(--tono-crono));
+  background-size: 40px 100%, 100% 100%;
+  animation: correrRayas .9s linear infinite;
+}
+@keyframes correrRayas{ to{ background-position: -40px 0, 0 0; } }
+.cronoFill::after{
+  content: ""; position: absolute; top: -2px; bottom: -2px; right: -1px; width: 3px;
+  background: var(--papel-alto);
+  box-shadow: 0 0 10px 2px var(--tono-crono), 0 0 22px 6px color-mix(in srgb, var(--tono-crono) 55%, transparent);
+}
+.crono.tension .cronoFill{ animation-duration: .55s; }
+.crono.critico .cronoFill{ animation-duration: .3s; }
+.crono.critico .cronoRiel{
+  border-color: var(--mal);
+  animation: alarmaRiel .6s ease-in-out infinite;
+}
+@keyframes alarmaRiel{
+  0%,100%{ box-shadow: inset 0 2px 5px -2px color-mix(in srgb, var(--tinta) 45%, transparent), 0 0 0 0 transparent; }
+  50%{ box-shadow: inset 0 2px 5px -2px color-mix(in srgb, var(--tinta) 45%, transparent), 0 0 16px -2px var(--mal); }
+}
+
+.cronoNum{
+  font-family: var(--tique); font-size: 27px; font-weight: 600; line-height: 1;
+  font-variant-numeric: tabular-nums;
+  min-width: 2.2ch; text-align: right;
+  color: var(--tinta);
+}
+.crono.tension .cronoNum{ color: var(--oro); }
+.crono.critico .cronoNum{ color: var(--mal); animation: latidoNum .6s cubic-bezier(.2,.9,.3,1.6) infinite; }
+@keyframes latidoNum{ 0%,100%{ transform: scale(1);} 42%{ transform: scale(1.22);} }
+
+.pulla{ min-height: 42px; display: flex; align-items: center; }
+.pullaTexto{
+  font-family: var(--display); font-style: italic; font-weight: 600;
+  font-variation-settings: "SOFT" 60, "WONK" 1;
+  font-size: 14.5px; line-height: 1.3;
+  color: var(--tinta-suave);
+  border-left: 2px solid var(--oro);
+  padding-left: 11px;
+  text-wrap: pretty;
+}
+.pulla.visible .pullaTexto{ animation: entrarPulla .55s cubic-bezier(.2,.9,.25,1.15) both; }
+@keyframes entrarPulla{
+  from{ opacity: 0; transform: translateX(22px) skewX(-7deg); filter: blur(3px); }
+  to{ opacity: 1; transform: none; filter: none; }
+}
+.pulla.ultima .pullaTexto{ color: var(--mal); border-left-color: var(--mal); }
+
+/* ============================================================
    MARCADOR ENTRE RONDAS
    ============================================================ */
 .tablero{ padding: 20px 16px 18px; display: flex; flex-direction: column; gap: 14px; }
@@ -676,6 +748,7 @@ body{
   }
   .sello.golpe{ animation: none; opacity: 0; }
   .puestoPodio .bloque{ height: var(--h); }
+  .cronoFill, .crono.critico .cronoRiel, .crono.critico .cronoNum{ animation: none !important; }
 }
 </style>
 
@@ -713,12 +786,13 @@ body{
 
     <div class="reglas">
       <div class="regla"><i class="num">1</i><div><b>Por turnos.</b> En cada ronda todos los equipos responden la misma pregunta y se van pasando el celular. El orden rota en cada ronda.</div></div>
-      <div class="regla"><i class="num">2</i><div><b>Marcador.</b> Al cerrar cada ronda aparece la tabla de posiciones: puesto, puntos y quién subió o bajó.</div></div>
-      <div class="regla"><i class="num">3</i><div><b>Racha.</b> Cada acierto seguido vale más: 100 → 150 → 200 → 250 → 300 puntos. Un error la reinicia.</div></div>
-      <div class="regla"><i class="num">4</i><div><b>Comodines.</b> Cada equipo tiene <b>3 descartes</b> para todo el torneo, y solo puede usar <b>uno por pregunta</b>. Además, 2 pistas.</div></div>
+      <div class="regla"><i class="num">2</i><div><b>20 segundos.</b> Cada equipo tiene 20 segundos por pregunta. Si se les acaba el tiempo, la decisión se pierde y no suma puntos.</div></div>
+      <div class="regla"><i class="num">3</i><div><b>Marcador.</b> Al cerrar cada ronda aparece la tabla de posiciones: puesto, puntos y quién subió o bajó.</div></div>
+      <div class="regla"><i class="num">4</i><div><b>Racha.</b> Cada acierto seguido vale más: 100 → 150 → 200 → 250 → 300 puntos. Un error la reinicia.</div></div>
+      <div class="regla"><i class="num">5</i><div><b>Comodines.</b> Cada equipo tiene <b>3 descartes</b> para todo el torneo, y solo puede usar <b>uno por pregunta</b>. Además, 2 pistas.</div></div>
     </div>
 
-    <p class="pieAyuda">Un solo celular · sin reloj · funciona sin internet</p>
+    <p class="pieAyuda">Un solo celular · 20 segundos por decisión · funciona sin internet</p>
   </section>
 
   <!-- ============ PASO DE TURNO ============ -->
@@ -730,6 +804,7 @@ body{
       <div class="dato"><span class="k">Puesto</span><span class="v" id="turnoPuesto">1º</span></div>
       <div class="dato"><span class="k">Puntos</span><span class="v" id="turnoPuntos">0</span></div>
       <div class="dato"><span class="k">Descartes</span><span class="v" id="turnoComodines">3</span></div>
+      <div class="dato"><span class="k">Tiempo</span><span class="v">20 s</span></div>
     </div>
     <p class="nota" id="turnoNota">Los demás equipos no deben mirar la pantalla hasta que este turno termine.</p>
     <button class="boton oro" id="btnComenzarTurno" type="button">Estamos listos</button>
@@ -747,6 +822,12 @@ body{
         </div>
       </div>
       <div class="cintaProgreso" id="cintaProgreso"></div>
+
+      <div class="crono calma" id="crono">
+        <div class="cronoRiel"><div class="cronoFill" id="cronoFill"></div></div>
+        <div class="cronoNum" id="cronoNum">20</div>
+      </div>
+      <div class="pulla" id="pulla"><span class="pullaTexto" id="pullaTexto"></span></div>
     </div>
 
     <div class="papel tarjeta" id="tarjeta">
@@ -992,6 +1073,52 @@ body{
     }
   ];
 
+  var SEGUNDOS = 20;
+
+  // Pullas de salón: se sirven cada 4 segundos y van subiendo de tono.
+  var PULLAS = [
+    [ // 16 segundos restantes — cortesía sospechosa
+      "Tómense su tiempo. El reloj, sin embargo, no comparte ese criterio.",
+      "Se percibe deliberación. Confiemos en que también haya conclusión.",
+      "Admirable serenidad, dadas las circunstancias.",
+      "Empiezo a intuir que esto tomará más de lo estrictamente necesario.",
+      "Qué elegante manera de dejar que el silencio hable primero.",
+      "Cuatro renglones, señores. No es el Tratado de Versalles."
+    ],
+    [ // 12 segundos — ironía fina
+      "Vuestra prudencia comienza a confundirse con la inercia.",
+      "Rara virtud la suya: dudar con la solemnidad de un notario.",
+      "Cuánta ceremonia para escoger entre cuatro opciones.",
+      "Sospecho que la respuesta piensa llegar por correo certificado.",
+      "Su deliberación honraría a un tribunal del siglo XVII.",
+      "Se agradece el suspenso, aunque nadie lo hubiese solicitado."
+    ],
+    [ // 8 segundos — el guante se levanta
+      "Su parsimonia empieza a adquirir dimensiones geológicas.",
+      "Comprendo: la decisión exige una comisión, un acta y dos testigos.",
+      "Admiro su talento para convertir el titubeo en disciplina académica.",
+      "Su silencio es rico en matices y notablemente pobre en resultados.",
+      "Si la indecisión cotizara en bolsa, serían accionistas mayoritarios.",
+      "Nunca vi tanta contemplación dedicada a tan modesto dilema."
+    ],
+    [ // 4 segundos — sin anestesia, pero con buenos modales
+      "Su sagacidad viaja hoy en carreta y por camino empedrado.",
+      "Cuatro opciones, tres cerebros y un reloj burlándose de todos.",
+      "A este ritmo la oferta expiró, el producto también, y ustedes siguen ahí.",
+      "Hay quien piensa despacio y quien apenas posterga el bochorno.",
+      "La respuesta está ahí, mirándolos con algo parecido a la lástima.",
+      "Un poco más y habrá que servirles la merienda."
+    ],
+    [ // se acabó — epitafio
+      "Se acabó. Que conste en acta: el reloj los venció sin esforzarse.",
+      "El tiempo, ese acreedor implacable, acaba de cobrarles.",
+      "Fin de la deliberación. El resultado: cero, con honores.",
+      "Su indecisión ha sido histórica. Lástima que no puntúe.",
+      "Y así, con enorme dignidad, no respondieron absolutamente nada.",
+      "El reloj no era negociable. Ahora ya lo saben."
+    ]
+  ];
+
   var VALORES = [100, 150, 200, 250, 300];
   var LETRAS = ["A", "B", "C", "D"];
   var MAX_EQUIPOS = 6;
@@ -1015,6 +1142,11 @@ body{
     bloqueado: false,
     descarteUsado: false,
     silencio: false,
+    cronoRaf: 0,
+    cronoT0: 0,
+    cronoEtapa: 0,
+    cronoUltimoSeg: 0,
+    pullas: [],
     modoRepaso: false
   };
 
@@ -1058,6 +1190,9 @@ body{
     fallo:   function(){ tono(196,0,.20,"sawtooth",.09); tono(146.83,.10,.30,"sawtooth",.08); },
     comodin: function(){ tono(880,0,.07,"square",.06); tono(1174.66,.06,.10,"square",.05); },
     caja:    function(){ tono(1046.5,0,.06,"square",.07); tono(1318.5,.05,.09,"square",.06); tono(1568,.11,.22,"triangle",.09); },
+    tic:     function(){ tono(1320, 0, .045, "square", .05); },
+    pulla:   function(){ tono(660, 0, .05, "triangle", .045); tono(494, .05, .09, "triangle", .04); },
+    tiempo:  function(){ tono(220, 0, .5, "sawtooth", .12); tono(147, .12, .7, "sawtooth", .10); tono(110, .26, .9, "sine", .09); },
     tablero: function(){ tono(659.25,0,.12,"triangle",.10); tono(880,.10,.18,"triangle",.09); },
     final:   function(){ [523.25,659.25,783.99,1046.5,1318.5].forEach(function(f,i){ tono(f, i*.11, .5, "triangle", .13); }); }
   };
@@ -1273,6 +1408,7 @@ body{
      TURNOS
      ========================================================== */
   function irATurno(){
+    detenerCrono();
     if (solo()){ mostrarPantalla("pantallaJuego"); pintarPregunta(); return; }
     var eq = equipoActual();
     $("avisoRonda").textContent = "Ronda " + String(estado.ronda + 1).padStart(2, "0") + " de " + PREGUNTAS.length;
@@ -1332,6 +1468,7 @@ body{
     actualizarRacha(eq);
     actualizarComodines();
     actualizarCinta(eq);
+    arrancarCrono();
   }
 
   function actualizarCinta(eq){
@@ -1352,9 +1489,11 @@ body{
     $("rotuloDescartar").textContent = estado.descarteUsado ? "Ya descartaron" : "Descartar una";
   }
 
-  function responder(boton, elegida){
+  function responder(boton, elegida, porTiempo){
     if (estado.bloqueado) return;
     estado.bloqueado = true;
+    detenerCrono();
+    if (porTiempo) pintarCrono(0);
 
     var p = PREGUNTAS[estado.ronda];
     var eq = equipoActual();
@@ -1379,7 +1518,7 @@ body{
         b.classList.remove("descartada", "apagada");
         b.classList.add("correcta");
         b.querySelector(".marca").textContent = "correcta";
-      } else if (b === boton){
+      } else if (boton && b === boton){
         b.classList.add("errada");
         b.querySelector(".marca").textContent = "su respuesta";
       } else {
@@ -1388,7 +1527,7 @@ body{
     });
 
     var sello = $("sello");
-    sello.textContent = bien ? "¡Bien!" : "Uy…";
+    sello.textContent = porTiempo ? "Tarde" : (bien ? "¡Bien!" : "Uy…");
     sello.className = "sello " + (bien ? "bien" : "mal");
     void sello.offsetWidth;
     sello.classList.add("golpe");
@@ -1399,16 +1538,17 @@ body{
       lanzarConfeti(38, false);
       puntoFlotante(boton, "+" + ganado);
       animarMarcador(eq);
-    } else {
+    } else if (!porTiempo){
       sonido.fallo();
       vibrar([50, 60, 50]);
     }
 
     var vt = $("veredictoTitulo");
     vt.className = "veredictoTitulo " + (bien ? "bien" : "mal");
-    $("veredictoTexto").textContent = bien
-      ? (eq.racha >= 3 ? "¡Racha de " + eq.racha + "!" : "¡Decisión correcta!")
-      : "Esa decisión sale cara";
+    $("veredictoTexto").textContent = porTiempo
+      ? "Se acabó el tiempo"
+      : (bien ? (eq.racha >= 3 ? "¡Racha de " + eq.racha + "!" : "¡Decisión correcta!")
+              : "Esa decisión sale cara");
     $("ganancia").textContent = bien ? "+" + ganado : "+0";
     $("ganancia").style.color = bien ? "var(--bien)" : "var(--tinta-tenue)";
     $("explicacion").innerHTML = p.porque;
@@ -1464,6 +1604,7 @@ body{
   }
 
   function siguiente(){
+    detenerCrono();
     var t = $("tarjeta");
     t.classList.remove("entra");
     t.classList.add("sale");
@@ -1480,6 +1621,79 @@ body{
         terminar();
       }
     }, reducido ? 0 : 300);
+  }
+
+
+  /* ==========================================================
+     CRONÓMETRO
+     ========================================================== */
+  function elegirPullas(){
+    return PULLAS.map(function(nivel){ return nivel[(Math.random() * nivel.length) | 0]; });
+  }
+
+  function mostrarPulla(texto, ultima){
+    var caja = $("pulla");
+    $("pullaTexto").textContent = texto;
+    caja.classList.toggle("ultima", !!ultima);
+    caja.classList.remove("visible");
+    void caja.offsetWidth;
+    caja.classList.add("visible");
+    if (!ultima) sonido.pulla();
+  }
+
+  function pintarCrono(queda){
+    var crono = $("crono");
+    $("cronoFill").style.width = (queda / SEGUNDOS * 100) + "%";
+    $("cronoNum").textContent = Math.ceil(queda);
+    crono.className = "crono " + (queda > 10 ? "calma" : (queda > 5 ? "tension" : "critico"));
+  }
+
+  function detenerCrono(){
+    if (estado.cronoRaf){ cancelAnimationFrame(estado.cronoRaf); estado.cronoRaf = 0; }
+  }
+
+  function arrancarCrono(){
+    detenerCrono();
+    estado.cronoT0 = performance.now();
+    estado.cronoEtapa = 0;
+    estado.cronoUltimoSeg = SEGUNDOS + 1;
+    estado.pullas = elegirPullas();
+    $("pulla").classList.remove("visible", "ultima");
+    $("pullaTexto").textContent = "";
+    pintarCrono(SEGUNDOS);
+
+    (function paso(){
+      var pasado = (performance.now() - estado.cronoT0) / 1000;
+      var queda = Math.max(0, SEGUNDOS - pasado);
+      pintarCrono(queda);
+
+      var etapa = Math.min(Math.floor(pasado / 4), PULLAS.length - 1);
+      if (etapa > estado.cronoEtapa && etapa >= 1){
+        estado.cronoEtapa = etapa;
+        mostrarPulla(estado.pullas[etapa - 1], false);
+      }
+
+      var seg = Math.ceil(queda);
+      if (queda <= 5 && seg !== estado.cronoUltimoSeg && seg > 0){
+        estado.cronoUltimoSeg = seg;
+        sonido.tic();
+      }
+
+      if (queda <= 0){
+        estado.cronoRaf = 0;
+        seAcaboElTiempo();
+        return;
+      }
+      estado.cronoRaf = requestAnimationFrame(paso);
+    })();
+  }
+
+  function seAcaboElTiempo(){
+    if (estado.bloqueado) return;
+    mostrarPulla(estado.pullas[PULLAS.length - 1], true);
+    sonido.tiempo();
+    vibrar([90, 70, 90, 70, 140]);
+    responder(null, -1, true);
   }
 
   /* ==========================================================
@@ -1588,6 +1802,7 @@ body{
   }
 
   function terminar(){
+    detenerCrono();
     estado.modoRepaso = false;
     $("btnRepaso").textContent = "Ver el repaso de las 11 decisiones";
 
@@ -1687,6 +1902,8 @@ body{
   }
 
   function reiniciar(){
+    detenerCrono();
+    estado.bloqueado = false;
     estado.modoRepaso = false;
     $("btnRepaso").textContent = "Ver el repaso de las 11 decisiones";
     confeti = [];
