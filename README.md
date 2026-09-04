@@ -1,39 +1,40 @@
 # ¿Eres un consumidor inteligente?
 
-Torneo interactivo de educación financiera: 11 decisiones de compra que varios
-equipos juegan por turnos en un mismo celular, con marcador de posiciones
-entre ronda y ronda.
+Juego interactivo de educación financiera: 11 decisiones de compra.
+Cada equipo juega en su propio celular, todos al mismo tiempo.
 
 ## Cómo se juega
 
-1. En la portada se registran los equipos (de 1 a 6).
-2. Cada ronda es una pregunta: el celular pasa de equipo en equipo y todos
-   responden la misma decisión. **El orden de turnos rota en cada ronda.**
-3. **20 segundos por pregunta.** Una barra a rayas se va vaciando y, cada cuatro
-   segundos, aparece una pulla elegante que sube de tono ("Su parsimonia empieza
-   a adquirir dimensiones geológicas"). Si el tiempo se acaba, la decisión se
-   pierde y no suma puntos.
-4. Cada acierto seguido vale más (100 → 150 → 200 → 250 → 300 puntos).
-   Un error reinicia la racha.
-5. **Después de cada respuesta** aparece el marcador: puesto, puntos, aciertos,
-   quién subió o bajó de posición, y el equipo que acaba de jugar resaltado en
-   dorado. Cuando la ronda se completa, el marcador lo anuncia y el botón pasa
-   a la ronda siguiente.
-6. Comodines por equipo para todo el torneo: **3 descartes**, con un máximo de
-   **uno por pregunta**, y **2 pistas**. El reloj no se detiene al usarlos.
-7. Al final sale el recibo del torneo con podio, tabla de equipos y el rango
-   del campeón. Tomen una captura para dejar constancia.
+1. Cada equipo abre el juego en **su** celular y escribe el nombre del equipo
+   y el de sus tres integrantes.
+2. Ese equipo responde las **once** preguntas de corrido. Los tres deciden
+   juntos, pero solo ese celular juega.
+3. **20 segundos por pregunta.** Una barra a rayas se va vaciando y, cada
+   cuatro segundos, aparece una pulla elegante que sube de tono ("Su parsimonia
+   empieza a adquirir dimensiones geológicas"). Si el tiempo se acaba, la
+   decisión se pierde y no suma puntos.
+4. **Racha:** cada acierto seguido vale más (100 → 150 → 200 → 250 → 300).
+   Un error la reinicia.
+5. **Comodines:** 3 descartes para todo el juego, máximo uno por pregunta,
+   y 2 pistas. El reloj no se detiene al usarlos.
+6. Después de cada respuesta aparece **su marcador**: puntos acumulados,
+   aciertos, racha, comodines que quedan y el mapa de las once decisiones.
+7. Al terminar sale el **recibo** con el puntaje, el rango del equipo y un
+   **código** tipo `CI-2450-09`.
 
-Después de cada respuesta se muestra la explicación del concepto financiero, y
-al terminar se puede abrir el repaso de las 11 decisiones.
+## Comparar entre equipos
 
-Si se registra un solo equipo, el juego corre en modo individual: sin pantalla
-de turnos ni marcador, y el recibo final detalla las 11 decisiones una por una.
+El código del recibo es la forma de comparar: `CI-<puntos>-<aciertos>`.
+Gana el equipo con más puntos; en caso de empate, el que tenga más aciertos.
+Cada equipo muestra su pantalla final o toma una captura.
+
+Después de cada respuesta aparece la explicación del concepto financiero, y al
+terminar se puede abrir el repaso de las once decisiones.
 
 ## Cómo abrirlo
 
 Un solo archivo, `index.html`. Funciona sin internet y sin instalar nada:
-ábrelo con cualquier navegador (celular o computador).
+ábrelo con cualquier navegador, en celular o en computador.
 
 En computador se puede jugar con el teclado: `A`–`D` o `1`–`4` para responder,
 `Enter` para avanzar, `D` para descartar y `P` para la pista.

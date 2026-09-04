@@ -207,35 +207,23 @@ body{
   animation: subir .7s ease both 1s;
 }
 
-.listaEquipos{ display: flex; flex-direction: column; gap: 10px; }
-.fichaEquipo{
-  display: grid; grid-template-columns: 26px 1fr 28px; gap: 9px; align-items: center;
-  animation: subir .35s ease both;
+.campo{ display: flex; flex-direction: column; gap: 6px; }
+.campo label{
+  font-family: var(--tique); font-size: 10px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--tinta-tenue);
 }
-.fichaEquipo .orden{
-  font-family: var(--tique); font-size: 11px; font-weight: 600; color: var(--oro);
-  border: 1px solid var(--oro); border-radius: 3px;
-  height: 26px; line-height: 24px; text-align: center;
-}
-.fichaEquipo input{
+.campo input{
   width: 100%; min-width: 0;
-  font-family: var(--texto); font-size: 15.5px; font-weight: 600; color: var(--tinta);
+  font-family: var(--texto); font-size: 16px; font-weight: 600; color: var(--tinta);
   background: transparent; border: 0;
   border-bottom: 1.5px dashed var(--linea-fuerte);
-  padding: 7px 2px;
+  padding: 8px 2px;
   transition: border-color .25s;
 }
-.fichaEquipo input::placeholder{ color: var(--tinta-tenue); font-weight: 400; }
-.fichaEquipo input:focus{ outline: none; border-bottom-color: var(--oro); border-bottom-style: solid; }
-.quitar{
-  width: 28px; height: 28px; border-radius: 50%;
-  border: 1px solid var(--linea-fuerte); background: transparent;
-  color: var(--tinta-tenue); font-size: 15px; line-height: 1; cursor: pointer;
-  transition: color .2s, border-color .2s, transform .2s;
-}
-.quitar:hover{ color: var(--mal); border-color: var(--mal); transform: rotate(90deg); }
-.quitar:disabled{ opacity: .25; cursor: default; }
-.quitar:focus-visible{ outline: 2px solid var(--oro); outline-offset: 2px; }
+.campo input::placeholder{ color: var(--tinta-tenue); font-weight: 400; }
+.campo input:focus{ outline: none; border-bottom-color: var(--oro); border-bottom-style: solid; }
+.integrantes{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.integrantes input{ font-size: 14px; }
 
 .boton{
   font-family: var(--texto); font-size: 15px; font-weight: 700; letter-spacing: .02em;
@@ -585,51 +573,21 @@ body{
 /* ============================================================
    MARCADOR ENTRE RONDAS
    ============================================================ */
-.tablero{ padding: 20px 16px 18px; display: flex; flex-direction: column; gap: 14px; }
+.tablero{ padding: 22px 18px 20px; display: flex; flex-direction: column; gap: 16px; }
+.granPuntaje{ display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0 2px; }
+.cifraGrande{
+  font-family: var(--tique); font-size: clamp(52px, 16vw, 72px); font-weight: 600;
+  line-height: 1; font-variant-numeric: tabular-nums; color: var(--oro);
+  text-shadow: 0 2px 0 color-mix(in srgb, var(--sello) 30%, transparent);
+}
+.cintaProgreso.grande i{ height: 9px; border-radius: 3px; }
+.cintaProgreso.grande i.hoy{ transform: scaleY(1.5); }
 .tableroCabeza{ display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .tableroCabeza h2{
   font-family: var(--display); font-weight: 700; font-size: 27px; margin: 0;
   font-variation-settings: "SOFT" 40, "WONK" 1;
 }
 #pantallaMarcador.activa{ justify-content: center; }
-.posiciones{ display: flex; flex-direction: column; }
-.filaPos{
-  display: grid; grid-template-columns: 30px 1fr auto; gap: 11px;
-  align-items: center; padding: 11px 0;
-  border-bottom: 1px dotted var(--linea);
-  animation: filaEntra .5s cubic-bezier(.2,.9,.25,1.1) both;
-  animation-delay: calc(var(--i) * 130ms + 150ms);
-}
-@keyframes filaEntra{ from{ opacity: 0; transform: translateX(-18px);} to{ opacity: 1; transform: none;} }
-.filaPos .puesto{
-  font-family: var(--tique); font-size: 16px; font-weight: 600;
-  text-align: center; color: var(--tinta-tenue);
-  border: 1px solid var(--linea-fuerte); border-radius: 3px; line-height: 28px; height: 30px;
-}
-.filaPos.actual{
-  background: color-mix(in srgb, var(--oro) 9%, transparent);
-  box-shadow: inset 3px 0 0 var(--oro);
-}
-.filaPos.actual .nom{ color: var(--oro); }
-.filaPos.p1 .puesto{ color: var(--papel-alto); background: var(--oro); border-color: var(--oro); }
-.filaPos.p2 .puesto{ color: var(--tinta); border-color: var(--tinta-suave); }
-.filaPos .cuerpo{ min-width: 0; display: flex; flex-direction: column; gap: 5px; }
-.filaPos .nom{
-  font-weight: 600; font-size: 15px;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.filaPos .riel{ height: 6px; border-radius: 3px; background: var(--linea); overflow: hidden; }
-.filaPos .riel i{
-  display: block; height: 100%; width: 0;
-  background: linear-gradient(90deg, var(--oro), var(--oro-vivo));
-  transition: width 1.1s cubic-bezier(.2,.9,.25,1) .35s;
-}
-.filaPos.p1 .riel i{ background: linear-gradient(90deg, var(--sello), var(--oro-vivo)); }
-.filaPos .lado{ text-align: right; display: flex; flex-direction: column; gap: 3px; align-items: flex-end; }
-.filaPos .pts{ font-family: var(--tique); font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.delta{ font-family: var(--tique); font-size: 10px; letter-spacing: .1em; color: var(--tinta-tenue); }
-.delta.sube{ color: var(--bien); }
-.delta.baja{ color: var(--mal); }
 .tableroPie{ font-size: 13px; color: var(--tinta-suave); text-align: center; margin: 0; }
 
 /* ============================================================
@@ -661,30 +619,6 @@ body{
   color: var(--oro); text-wrap: balance;
 }
 .reciboCabeza .equipo{ font-size: 14px; color: var(--tinta-suave); }
-
-.podio{
-  display: grid; grid-template-columns: repeat(3, 1fr); align-items: end; gap: 8px;
-  border-bottom: 2px solid var(--tinta);
-}
-.podio.dos{ grid-template-columns: repeat(2, 1fr); }
-.puestoPodio{ display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
-.puestoPodio .quien{
-  font-size: 12.5px; font-weight: 600; text-align: center; line-height: 1.2;
-  max-width: 100%; white-space: normal; overflow-wrap: anywhere;
-}
-.puestoPodio .cuanto{ font-family: var(--tique); font-size: 11px; color: var(--tinta-suave); }
-.puestoPodio .bloque{
-  width: 100%; border: 1px solid var(--linea-fuerte); border-bottom: 0;
-  border-radius: 3px 3px 0 0;
-  display: grid; place-items: center;
-  font-family: var(--tique); font-size: 20px; font-weight: 600; color: var(--tinta-suave);
-  height: 0; animation: crecerPodio .9s cubic-bezier(.2,.9,.25,1.05) both .3s;
-}
-@keyframes crecerPodio{ from{ height: 0; opacity: 0; } to{ height: var(--h); opacity: 1; } }
-.puestoPodio.oro1 .bloque{
-  background: linear-gradient(180deg, color-mix(in srgb, var(--oro) 30%, transparent), transparent);
-  border-color: var(--oro); color: var(--oro);
-}
 
 .lineas{ display: flex; flex-direction: column; }
 .linea{
@@ -780,39 +714,33 @@ body{
 
     <div class="moneda" aria-hidden="true">$</div>
 
-    <p class="bajada">Once decisiones de compra, todos los equipos en un mismo celular. El marcador dice quién va ganando.</p>
+    <p class="bajada">Once decisiones de compra. Cada equipo juega en su propio celular, todos al mismo tiempo.</p>
 
     <div class="papel registro">
-      <span class="etiqueta">Equipos en juego</span>
-      <div class="listaEquipos" id="listaEquipos"></div>
-      <button class="boton fantasma chico" id="btnAgregarEquipo" type="button">+ Agregar equipo</button>
+      <div class="campo">
+        <label for="nombreEquipo">Nombre del equipo</label>
+        <input id="nombreEquipo" type="text" maxlength="26" placeholder="Los Ahorradores" autocomplete="off">
+      </div>
+      <div class="campo">
+        <label for="int1">Los tres integrantes</label>
+        <div class="integrantes">
+          <input id="int1" type="text" maxlength="14" placeholder="Nombre 1" autocomplete="off">
+          <input id="int2" type="text" maxlength="14" placeholder="Nombre 2" autocomplete="off">
+          <input id="int3" type="text" maxlength="14" placeholder="Nombre 3" autocomplete="off">
+        </div>
+      </div>
       <button class="boton oro" id="btnEmpezar" type="button">Abrir la caja registradora</button>
     </div>
 
     <div class="reglas">
-      <div class="regla"><i class="num">1</i><div><b>Por turnos.</b> En cada ronda todos los equipos responden la misma pregunta y se van pasando el celular. El orden rota en cada ronda.</div></div>
-      <div class="regla"><i class="num">2</i><div><b>20 segundos.</b> Cada equipo tiene 20 segundos por pregunta. Si se les acaba el tiempo, la decisión se pierde y no suma puntos.</div></div>
-      <div class="regla"><i class="num">3</i><div><b>Marcador.</b> Después de <b>cada</b> respuesta aparece la tabla de posiciones: puesto, puntos y quién subió o bajó.</div></div>
-      <div class="regla"><i class="num">4</i><div><b>Racha.</b> Cada acierto seguido vale más: 100 → 150 → 200 → 250 → 300 puntos. Un error la reinicia.</div></div>
-      <div class="regla"><i class="num">5</i><div><b>Comodines.</b> Cada equipo tiene <b>3 descartes</b> para todo el torneo, y solo puede usar <b>uno por pregunta</b>. Además, 2 pistas.</div></div>
+      <div class="regla"><i class="num">1</i><div><b>Un celular por equipo.</b> Los tres integrantes deciden juntos y responden las once preguntas en este mismo celular.</div></div>
+      <div class="regla"><i class="num">2</i><div><b>20 segundos.</b> Cada pregunta tiene 20 segundos. Si se les acaba el tiempo, la decisión se pierde y no suma puntos.</div></div>
+      <div class="regla"><i class="num">3</i><div><b>Racha.</b> Cada acierto seguido vale más: 100 → 150 → 200 → 250 → 300 puntos. Un error la reinicia.</div></div>
+      <div class="regla"><i class="num">4</i><div><b>Comodines.</b> <b>3 descartes</b> para todo el juego, máximo <b>uno por pregunta</b>, y <b>2 pistas</b>.</div></div>
+      <div class="regla"><i class="num">5</i><div><b>Marcador.</b> Después de cada respuesta ven sus puntos, sus aciertos y su racha. Al final reciben un código para comparar con los otros equipos.</div></div>
     </div>
 
-    <p class="pieAyuda">Un solo celular · 20 segundos por decisión · funciona sin internet</p>
-  </section>
-
-  <!-- ============ PASO DE TURNO ============ -->
-  <section class="pantalla turno" id="pantallaTurno">
-    <div class="aviso" id="avisoRonda">Ronda 01 de 11</div>
-    <div class="aviso">Pasen el celular a</div>
-    <h2 class="turnoNombre" id="turnoNombre">Equipo 1</h2>
-    <div class="turnoDatos">
-      <div class="dato"><span class="k">Puesto</span><span class="v" id="turnoPuesto">1º</span></div>
-      <div class="dato"><span class="k">Puntos</span><span class="v" id="turnoPuntos">0</span></div>
-      <div class="dato"><span class="k">Descartes</span><span class="v" id="turnoComodines">3</span></div>
-      <div class="dato"><span class="k">Tiempo</span><span class="v">20 s</span></div>
-    </div>
-    <p class="nota" id="turnoNota">Los demás equipos no deben mirar la pantalla hasta que este turno termine.</p>
-    <button class="boton oro" id="btnComenzarTurno" type="button">Estamos listos</button>
+    <p class="pieAyuda">Un celular por equipo · 20 segundos por decisión · funciona sin internet</p>
   </section>
 
   <!-- ============ JUEGO ============ -->
@@ -863,34 +791,46 @@ body{
     </div>
   </section>
 
-  <!-- ============ MARCADOR ENTRE RONDAS ============ -->
+  <!-- ============ MARCADOR ENTRE PREGUNTAS ============ -->
   <section class="pantalla" id="pantallaMarcador">
     <div class="papel tablero">
       <div class="tableroCabeza">
-        <h2>Marcador</h2>
-        <span class="etiqueta" id="marcadorRonda">Tras la ronda 01</span>
+        <h2>Su marcador</h2>
+        <span class="etiqueta" id="marcadorRonda">Decisión 01 de 11</span>
       </div>
-      <div class="posiciones" id="posiciones"></div>
+
+      <div class="granPuntaje">
+        <span class="cifraGrande" id="progPuntos">0</span>
+        <span class="etiqueta">puntos acumulados</span>
+      </div>
+
+      <div class="cintaProgreso grande" id="progCinta"></div>
+
+      <div class="subtotales">
+        <div class="mini"><span class="k">Aciertos</span><span class="v" id="progAciertos">0/0</span></div>
+        <div class="mini"><span class="k">Racha</span><span class="v" id="progRacha">0</span></div>
+        <div class="mini"><span class="k">Descartes</span><span class="v" id="progDescartes">3</span></div>
+        <div class="mini"><span class="k">Pistas</span><span class="v" id="progPistas">2</span></div>
+      </div>
+
       <p class="tableroPie" id="tableroPie"></p>
     </div>
-    <button class="boton oro" id="btnSiguienteRonda" type="button">Empezar la ronda 02</button>
+    <button class="boton oro" id="btnSiguienteRonda" type="button">Siguiente decisión</button>
   </section>
 
   <!-- ============ RECIBO FINAL ============ -->
   <section class="pantalla cierre" id="pantallaFinal">
     <div class="papel recibo" id="recibo">
       <div class="reciboCabeza">
-        <div class="marca">Recibo del torneo · sin devoluciones</div>
+        <div class="marca">Recibo de consumo · sin devoluciones</div>
         <div class="rango" id="rango">Consumidor inteligente</div>
         <div class="equipo" id="reciboEquipo">Los Ahorradores</div>
       </div>
 
-      <div class="podio" id="podio"></div>
-
       <div class="lineas" id="lineasRecibo"></div>
 
       <div class="total">
-        <div class="rotulo" id="rotuloTotal">Total del campeón</div>
+        <div class="rotulo">Total acumulado</div>
         <div class="cifra" id="cifraTotal">0</div>
       </div>
 
@@ -903,13 +843,14 @@ body{
 
       <div class="barras" aria-hidden="true"></div>
       <div class="codigo" id="codigoRecibo">CI-0000-00</div>
+      <p class="pieAyuda">Comparen este código entre equipos: gana el número del medio.</p>
     </div>
 
     <div class="accionesFinales">
       <button class="boton oro" id="btnRepetir" type="button">Jugar otra vez</button>
       <button class="boton fantasma" id="btnRepaso" type="button">Ver el repaso de las 11 decisiones</button>
     </div>
-    <p class="pieAyuda">Tomen una captura del recibo para dejar constancia del torneo.</p>
+    <p class="pieAyuda">Tomen una captura del recibo y compárenlo con los otros equipos.</p>
   </section>
 
 </main>
@@ -1141,9 +1082,8 @@ body{
      ESTADO
      ========================================================== */
   var estado = {
-    equipos: [],
+    equipo: null,
     ronda: 0,
-    turno: 0,
     bloqueado: false,
     descarteUsado: false,
     silencio: false,
@@ -1157,11 +1097,7 @@ body{
 
   var $ = function(id){ return document.getElementById(id); };
 
-  function equipoActual(){
-    var n = estado.equipos.length;
-    return estado.equipos[(estado.ronda + estado.turno) % n];
-  }
-  function solo(){ return estado.equipos.length === 1; }
+  function equipoActual(){ return estado.equipo; }
 
   /* ==========================================================
      SONIDO
@@ -1318,40 +1254,6 @@ body{
     });
   })();
 
-  function numerarFichas(){
-    var fichas = $("listaEquipos").children;
-    for (var i = 0; i < fichas.length; i++){
-      fichas[i].querySelector(".orden").textContent = i + 1;
-      fichas[i].querySelector("input").placeholder = "Equipo " + (i + 1);
-      fichas[i].querySelector(".quitar").disabled = fichas.length <= 1;
-    }
-    $("btnAgregarEquipo").style.display = fichas.length >= MAX_EQUIPOS ? "none" : "block";
-  }
-
-  function agregarFicha(valor){
-    var lista = $("listaEquipos");
-    if (lista.children.length >= MAX_EQUIPOS) return null;
-    var fila = document.createElement("div");
-    fila.className = "fichaEquipo";
-    fila.innerHTML =
-      '<span class="orden"></span>' +
-      '<input type="text" maxlength="24" autocomplete="off">' +
-      '<button class="quitar" type="button" aria-label="Quitar equipo">&times;</button>';
-    var input = fila.querySelector("input");
-    if (valor) input.value = valor;
-    fila.querySelector(".quitar").addEventListener("click", function(){
-      fila.remove();
-      numerarFichas();
-      sonido.toque();
-    });
-    input.addEventListener("keydown", function(e){ if (e.key === "Enter") empezar(); });
-    lista.appendChild(fila);
-    numerarFichas();
-    return input;
-  }
-
-  agregarFicha("Los Ahorradores");
-  agregarFicha("");
 
   /* ==========================================================
      UTILIDADES
@@ -1371,67 +1273,33 @@ body{
   }
   function valorActual(eq){ return VALORES[Math.min(eq.racha, VALORES.length - 1)]; }
 
-  function clasificacion(){
-    return estado.equipos.slice().sort(function(a, b){
-      return (b.puntos - a.puntos) || (b.aciertos - a.aciertos) || (a.id - b.id);
-    });
-  }
-  function puestoDe(eq){ return clasificacion().indexOf(eq) + 1; }
 
   /* ==========================================================
      ARRANQUE
      ========================================================== */
   function empezar(){
-    var fichas = $("listaEquipos").children;
-    estado.equipos = [];
-    for (var i = 0; i < fichas.length; i++){
-      var nombre = fichas[i].querySelector("input").value.trim() || ("Equipo " + (i + 1));
-      estado.equipos.push({
-        id: i, nombre: nombre,
-        puntos: 0, racha: 0, mejorRacha: 0, aciertos: 0,
-        historial: [], descartes: DESCARTES, pistas: PISTAS,
-        puestoPrevio: i + 1
-      });
-    }
+    var ints = ["int1", "int2", "int3"].map(function(id){ return $(id).value.trim(); }).filter(Boolean);
+    var nombre = $("nombreEquipo").value.trim() || (ints.length ? ints.join(" · ") : "Equipo sin nombre");
+
+    estado.equipo = {
+      nombre: nombre, integrantes: ints,
+      puntos: 0, racha: 0, mejorRacha: 0, aciertos: 0,
+      historial: [], descartes: DESCARTES, pistas: PISTAS
+    };
     estado.ronda = 0;
-    estado.turno = 0;
     estado.modoRepaso = false;
 
     construirCinta();
     sonido.caja();
     vibrar(18);
-    irATurno();
+    mostrarPantalla("pantallaJuego");
+    pintarPregunta();
   }
 
   function construirCinta(){
     var cinta = $("cintaProgreso");
     cinta.innerHTML = "";
     for (var i = 0; i < PREGUNTAS.length; i++) cinta.appendChild(document.createElement("i"));
-  }
-
-  /* ==========================================================
-     TURNOS
-     ========================================================== */
-  function irATurno(){
-    detenerCrono();
-    if (solo()){ mostrarPantalla("pantallaJuego"); pintarPregunta(); return; }
-    var eq = equipoActual();
-    $("avisoRonda").textContent = "Ronda " + String(estado.ronda + 1).padStart(2, "0") + " de " + PREGUNTAS.length;
-    $("turnoNombre").textContent = eq.nombre;
-    $("turnoPuesto").textContent = puestoDe(eq) + "º";
-    $("turnoPuntos").textContent = eq.puntos;
-    $("turnoComodines").textContent = eq.descartes;
-    $("turnoNota").textContent = estado.ronda === 0
-      ? "Los demás equipos no deben mirar la pantalla hasta que este turno termine."
-      : "Turno " + (estado.turno + 1) + " de " + estado.equipos.length + " en esta ronda. Los demás, sin mirar.";
-    mostrarPantalla("pantallaTurno");
-    sonido.toque();
-  }
-
-  function comenzarTurno(){
-    mostrarPantalla("pantallaJuego");
-    pintarPregunta();
-    sonido.toque();
   }
 
   function pintarPregunta(){
@@ -1558,10 +1426,8 @@ body{
     $("ganancia").style.color = bien ? "var(--bien)" : "var(--tinta-tenue)";
     $("explicacion").innerHTML = p.porque;
 
-    var esElFinal = estado.turno === estado.equipos.length - 1 &&
-                    estado.ronda === PREGUNTAS.length - 1;
-    $("btnSiguiente").textContent = esElFinal ? "Ver el recibo final"
-      : (solo() ? "Siguiente decisión" : "Ver el marcador");
+    $("btnSiguiente").textContent = estado.ronda === PREGUNTAS.length - 1
+      ? "Ver el recibo final" : "Ver su marcador";
     $("veredicto").classList.add("visible");
     $("comodines").style.display = "none";
 
@@ -1615,11 +1481,8 @@ body{
     t.classList.add("sale");
     sonido.toque();
     setTimeout(function(){
-      var ultimoTurno = estado.turno === estado.equipos.length - 1;
-      var ultimaRonda = estado.ronda === PREGUNTAS.length - 1;
-      if (ultimoTurno && ultimaRonda){ terminar(); return; }
-      if (solo()){ estado.ronda += 1; irATurno(); return; }
-      mostrarMarcador();
+      if (estado.ronda === PREGUNTAS.length - 1) terminar();
+      else mostrarMarcador();
     }, reducido ? 0 : 300);
   }
 
@@ -1733,76 +1596,53 @@ body{
   }
 
   /* ==========================================================
-     MARCADOR ENTRE RONDAS
+     MARCADOR ENTRE PREGUNTAS
      ========================================================== */
   function mostrarMarcador(){
-    var tabla = clasificacion();
-    var maximo = Math.max(1, tabla[0].puntos);
-    var caja = $("posiciones");
-    caja.innerHTML = "";
+    var eq = estado.equipo;
+    var respondidas = eq.historial.filter(Boolean).length;
+    var ultima = eq.historial[estado.ronda];
 
-    var ultimoTurno = estado.turno === estado.equipos.length - 1;
-    var recienJugo = equipoActual();
-    var ronda = String(estado.ronda + 1).padStart(2, "0");
-    $("marcadorRonda").textContent = ultimoTurno
-      ? "Ronda " + ronda + " completa"
-      : "Ronda " + ronda + " · turno " + (estado.turno + 1) + " de " + estado.equipos.length;
+    $("marcadorRonda").textContent = "Van " + respondidas + " de " + PREGUNTAS.length;
+    $("progAciertos").textContent = eq.aciertos + "/" + respondidas;
+    $("progRacha").textContent = eq.racha === 0 ? "—" : "×" + eq.racha;
+    $("progDescartes").textContent = eq.descartes;
+    $("progPistas").textContent = eq.pistas;
 
-    tabla.forEach(function(eq, i){
-      var puesto = i + 1;
-      var cambio = eq.puestoPrevio - puesto;
-      var fila = document.createElement("div");
-      fila.className = "filaPos p" + Math.min(puesto, 3) + (eq === recienJugo ? " actual" : "");
-      fila.style.setProperty("--i", i);
-      var deltaTxt = cambio > 0 ? "▲ " + cambio : (cambio < 0 ? "▼ " + Math.abs(cambio) : "sin cambio");
-      var deltaCls = cambio > 0 ? "sube" : (cambio < 0 ? "baja" : "");
-      fila.innerHTML =
-        '<span class="puesto">' + puesto + '</span>' +
-        '<span class="cuerpo">' +
-          '<span class="nom"></span>' +
-          '<span class="riel"><i></i></span>' +
-        '</span>' +
-        '<span class="lado">' +
-          '<span class="pts">' + eq.puntos + '</span>' +
-          '<span class="delta ' + deltaCls + '">' + deltaTxt + '</span>' +
-        '</span>';
-      var respondidas = eq.historial.filter(Boolean).length;
-      fila.querySelector(".nom").textContent = eq.nombre + "  ·  " + eq.aciertos + "/" + respondidas;
-      caja.appendChild(fila);
-      var barra = fila.querySelector(".riel i");
-      requestAnimationFrame(function(){
-        barra.style.width = Math.round((eq.puntos / maximo) * 100) + "%";
-      });
-      eq.puestoPrevio = puesto;
-    });
+    var cinta = $("progCinta");
+    cinta.innerHTML = "";
+    for (var i = 0; i < PREGUNTAS.length; i++){
+      var seg = document.createElement("i");
+      if (eq.historial[i]) seg.className = eq.historial[i].bien ? "ok" : "no";
+      else if (i === estado.ronda + 1) seg.className = "hoy";
+      cinta.appendChild(seg);
+    }
 
-    var lider = tabla[0], segundo = tabla[1];
-    var dif = segundo ? lider.puntos - segundo.puntos : 0;
-    var porResponder = estado.equipos.length - estado.turno - 1;
-    var cabeza = dif === 0
-      ? "Empate en la punta."
-      : lider.nombre + " lidera por " + dif + " puntos.";
-    $("tableroPie").textContent = ultimoTurno
-      ? cabeza + " Quedan " + (PREGUNTAS.length - estado.ronda - 1) + " rondas."
-      : cabeza + " Falta" + (porResponder === 1 ? " " : "n ") + porResponder +
-        (porResponder === 1 ? " equipo" : " equipos") + " por responder esta ronda.";
+    var vale = VALORES[Math.min(eq.racha, VALORES.length - 1)];
+    $("tableroPie").textContent = ultima && ultima.bien
+      ? "Si vuelven a acertar, la siguiente decisión les vale " + vale + " puntos."
+      : "La racha volvió a cero: la siguiente decisión vale " + vale + " puntos.";
 
-    $("btnSiguienteRonda").textContent = ultimoTurno
-      ? "Empezar la ronda " + String(estado.ronda + 2).padStart(2, "0")
-      : "Pasar el celular";
+    $("btnSiguienteRonda").textContent = "Decisión " + String(estado.ronda + 2).padStart(2, "0");
+
     mostrarPantalla("pantallaMarcador");
     sonido.tablero();
     vibrar(15);
+
+    var el = $("progPuntos");
+    var t0 = performance.now();
+    (function paso(t){
+      var k = Math.min((t - t0) / 900, 1);
+      var e = 1 - Math.pow(1 - k, 3);
+      el.textContent = Math.round(eq.puntos * e);
+      if (k < 1) requestAnimationFrame(paso);
+    })(t0);
   }
 
   function avanzarDesdeMarcador(){
-    if (estado.turno < estado.equipos.length - 1){
-      estado.turno += 1;
-    } else {
-      estado.ronda += 1;
-      estado.turno = 0;
-    }
-    irATurno();
+    estado.ronda += 1;
+    mostrarPantalla("pantallaJuego");
+    pintarPregunta();
   }
 
   /* ==========================================================
@@ -1822,60 +1662,33 @@ body{
     estado.modoRepaso = false;
     $("btnRepaso").textContent = "Ver el repaso de las 11 decisiones";
 
-    var tabla = clasificacion();
-    var campeon = tabla[0];
-    var rango = RANGOS.find(function(r){ return campeon.aciertos >= r.min; });
+    var eq = estado.equipo;
+    var rango = RANGOS.find(function(r){ return eq.aciertos >= r.min; });
 
     $("rango").textContent = rango.nombre;
-    $("reciboEquipo").textContent = solo() ? campeon.nombre : "Campeón: " + campeon.nombre;
+    $("reciboEquipo").textContent = eq.integrantes.length
+      ? eq.nombre + " · " + eq.integrantes.join(", ")
+      : eq.nombre;
     $("mensajeCierre").textContent = rango.msg;
-    $("miniAciertos").textContent = campeon.aciertos + "/" + PREGUNTAS.length;
-    $("miniRacha").textContent = campeon.mejorRacha;
-    $("rotuloTotal").textContent = solo() ? "Total acumulado" : "Total del campeón";
-    $("codigoRecibo").textContent = "CI-" + String(campeon.puntos).padStart(4, "0") + "-" + String(campeon.aciertos).padStart(2, "0");
-
-    var podio = $("podio");
-    podio.innerHTML = "";
-    if (solo()){
-      podio.style.display = "none";
-    } else {
-      podio.style.display = "grid";
-      var top = tabla.slice(0, 3);
-      var alturas = { 1: 96, 2: 70, 3: 52 };
-      var visual = top.length >= 3 ? [top[1], top[0], top[2]] : [top[1], top[0]];
-      podio.className = "podio" + (top.length < 3 ? " dos" : "");
-      visual.forEach(function(eq){
-        if (!eq) return;
-        var puesto = tabla.indexOf(eq) + 1;
-        var col = document.createElement("div");
-        col.className = "puestoPodio" + (puesto === 1 ? " oro1" : "");
-        col.innerHTML =
-          '<span class="quien"></span>' +
-          '<span class="cuanto">' + eq.puntos + ' pts</span>' +
-          '<span class="bloque" style="--h:' + alturas[puesto] + 'px">' + puesto + 'º</span>';
-        col.querySelector(".quien").textContent = eq.nombre;
-        podio.appendChild(col);
-      });
-    }
+    $("miniAciertos").textContent = eq.aciertos + "/" + PREGUNTAS.length;
+    $("miniRacha").textContent = eq.mejorRacha;
+    $("codigoRecibo").textContent = "CI-" + String(eq.puntos).padStart(4, "0") +
+                                    "-" + String(eq.aciertos).padStart(2, "0");
 
     var lineas = $("lineasRecibo");
     lineas.innerHTML = "";
-    if (solo()){
-      campeon.historial.forEach(function(h, i){
-        lineas.appendChild(filaRecibo(String(i + 1).padStart(2, "0"), h.resumen, h.bien ? "+" + h.puntos : "—", h.bien ? "ok" : "no", i));
-      });
-    } else {
-      tabla.forEach(function(eq, i){
-        lineas.appendChild(filaRecibo((i + 1) + "º", eq.nombre + " · " + eq.aciertos + "/" + PREGUNTAS.length, eq.puntos + " pts", i === 0 ? "ok campeon" : "", i));
-      });
-    }
+    eq.historial.forEach(function(h, i){
+      lineas.appendChild(filaRecibo(
+        String(i + 1).padStart(2, "0"), h.resumen,
+        h.bien ? "+" + h.puntos : "—", h.bien ? "ok" : "no", i));
+    });
 
     var el = $("cifraTotal");
     var t0 = performance.now();
     (function paso(t){
       var k = Math.min((t - t0) / 1400, 1);
       var e = 1 - Math.pow(1 - k, 4);
-      el.textContent = Math.round(campeon.puntos * e);
+      el.textContent = Math.round(eq.puntos * e);
       if (k < 1) requestAnimationFrame(paso);
     })(t0);
 
@@ -1891,7 +1704,6 @@ body{
     estado.modoRepaso = true;
     var caja = $("lineasRecibo");
     caja.innerHTML = "";
-    $("podio").style.display = "none";
     PREGUNTAS.forEach(function(p, i){
       var d = document.createElement("div");
       d.className = "linea";
@@ -1930,13 +1742,10 @@ body{
   /* ==========================================================
      CONTROLES
      ========================================================== */
-  $("btnAgregarEquipo").addEventListener("click", function(){
-    var input = agregarFicha("");
-    if (input) input.focus();
-    sonido.toque();
-  });
   $("btnEmpezar").addEventListener("click", empezar);
-  $("btnComenzarTurno").addEventListener("click", comenzarTurno);
+  ["nombreEquipo", "int1", "int2", "int3"].forEach(function(id){
+    $(id).addEventListener("keydown", function(e){ if (e.key === "Enter") empezar(); });
+  });
   $("btnSiguiente").addEventListener("click", siguiente);
   $("btnSiguienteRonda").addEventListener("click", avanzarDesdeMarcador);
   $("btnDescartar").addEventListener("click", usarDescartar);
@@ -1960,9 +1769,6 @@ body{
   });
 
   document.addEventListener("keydown", function(e){
-    if ($("pantallaTurno").classList.contains("activa") && (e.key === "Enter" || e.key === " ")){
-      e.preventDefault(); comenzarTurno(); return;
-    }
     if ($("pantallaMarcador").classList.contains("activa") && (e.key === "Enter" || e.key === " ")){
       e.preventDefault(); avanzarDesdeMarcador(); return;
     }
